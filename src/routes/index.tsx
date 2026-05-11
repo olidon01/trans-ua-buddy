@@ -1,8 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth, isStaff } from "@/hooks/use-auth";
 import { t } from "@/lib/i18n";
-import { Truck } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -22,8 +20,4 @@ function Index() {
   if (!session) return <Navigate to="/login" />;
   if (isStaff(roles)) return <Navigate to="/admin" />;
   return <Navigate to="/driver" />;
-
-  // Unreachable but keeps icon import meaningful in tree-shaking edge cases
-  // eslint-disable-next-line no-unreachable
-  return <Truck />;
 }
