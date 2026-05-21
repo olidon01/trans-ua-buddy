@@ -60,29 +60,34 @@ function AdminListPage() {
       ) : (
         <div className="space-y-2">
           {trips.map((trip) => (
-            <Link
-              key={trip.id}
-              to="/admin/$tripId"
-              params={{ tripId: trip.id }}
-              className="block bg-card border border-border rounded-xl p-4 hover:border-primary/40 hover:shadow-sm transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <StatusBadge status={trip.status} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{trip.full_name}</div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {trip.company_name} · {trip.car_number} · {trip.border_crossing}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(trip.created_at).toLocaleString("uk-UA")}
-                  </div>
-                </div>
-                <ChevronRight className="size-4 text-muted-foreground shrink-0" />
-              </div>
-            </Link>
+            <TripCard key={trip.id} trip={trip} />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function TripCard({ trip }: { trip: TripRow }) {
+  const navigate = useNavigate();
+  return (
+    <div
+      onClick={() => navigate({ to: "/admin/$tripId", params: { tripId: trip.id } })}
+      className="block cursor-pointer bg-card border border-border rounded-xl p-4 hover:border-primary/40 hover:shadow-sm transition-all"
+    >
+      <div className="flex items-center gap-3">
+        <StatusBadge status={trip.status} />
+        <div className="flex-1 min-w-1">
+          <div className="font-medium truncate">{trip.full_name}</div>
+          <div className="text-xs text-muted-foreground truncate">
+            {trip.company_name} · {trip.car_number} · {trip.border_crossing}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {new Date(trip.created_at).toLocaleString("uk-UA")}
+          </div>
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground shrink-1" />
+      </div>
     </div>
   );
 }
