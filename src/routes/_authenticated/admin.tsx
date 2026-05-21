@@ -86,7 +86,7 @@ function TripCard({ trip }: { trip: TripRow }) {
             {new Date(trip.created_at).toLocaleString("uk-UA")}
           </div>
         </div>
-        <ChevronRight className="size-4 text-muted-foreground shrink-1" />
+        <ChevronRight className="size-4 text-muted-foreground shrink-0" />
       </div>
     </div>
   );
