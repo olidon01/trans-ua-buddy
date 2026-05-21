@@ -77,7 +77,7 @@ function TripCard({ trip }: { trip: TripRow }) {
     >
       <div className="flex items-center gap-3">
         <StatusBadge status={trip.status} />
-        <div className="flex-1 min-w-1">
+        <div className="flex-1 min-w-0">
           <div className="font-medium truncate">{trip.full_name}</div>
           <div className="text-xs text-muted-foreground truncate">
             {trip.company_name} · {trip.car_number} · {trip.border_crossing}
