@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -126,6 +127,11 @@ function DriverForm({
     border_crossing: "",
     vin_last4: [""],
   });
+  const [prefs, setPrefs] = useState({
+    email_notifications: true,
+    telegram_notifications: true,
+    telegram_username: "",
+  });
   const [photos, setPhotos] = useState<Record<PhotoCategoryKey, File[]>>({
     van_overview: [],
     van_corners: [],
@@ -140,6 +146,25 @@ function DriverForm({
     { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null }[]
   >([]);
   const [submitting, setSubmitting] = useState(false);
+
+  // Load profile prefs once
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("email_notifications, telegram_notifications, telegram_username")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        setPrefs({
+          email_notifications: data.email_notifications ?? true,
+          telegram_notifications: data.telegram_notifications ?? true,
+          telegram_username: data.telegram_username ?? "",
+        });
+      }
+    })();
+  }, [user?.id]);
 
   useEffect(() => {
     if (!existingTrip) return;
@@ -245,13 +270,33 @@ function DriverForm({
           .eq("id", existingTrip.id);
         if (error) throw error;
 
-        // Delete rejected photos (rows + storage)
-        if (rejected.length) {
-          await supabase.storage.from("trip-photos").remove(rejected.map((r) => r.storage_path));
-          await supabase
-            .from("trip_photos")
-            .delete()
-            .in("id", rejected.map((r) => r.id));
+        // Replace each rejected photo IN-PLACE: upload new file, UPDATE row, delete old storage object.
+        for (const c of PHOTO_CATEGORIES) {
+          const rejInCat = rejected.filter((r) => r.category === c.key);
+          if (rejInCat.length === 0) continue;
+          const files = photos[c.key];
+          for (let i = 0; i < rejInCat.length; i++) {
+            const target = rejInCat[i];
+            const file = files[i];
+            if (!file) continue;
+            const ext = file.name.split(".").pop() || "jpg";
+            const newPath = `${user.id}/${existingTrip.id}/${c.key}/${crypto.randomUUID()}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("trip-photos")
+              .upload(newPath, file, { contentType: file.type, upsert: false });
+            if (upErr) throw upErr;
+            const { error: updErr } = await supabase
+              .from("trip_photos")
+              .update({
+                storage_path: newPath,
+                status: "pending",
+                comment: null,
+              })
+              .eq("id", target.id);
+            if (updErr) throw updErr;
+            // best-effort delete of old file
+            await supabase.storage.from("trip-photos").remove([target.storage_path]);
+          }
         }
       } else {
         const { data, error } = await supabase
@@ -261,28 +306,42 @@ function DriverForm({
           .single();
         if (error) throw error;
         tripId = data.id;
-      }
 
-      // Upload photos
-      for (const c of PHOTO_CATEGORIES) {
-        const files = photos[c.key];
-        if (!files.length) continue;
-        for (const file of files) {
-          const ext = file.name.split(".").pop() || "jpg";
-          const path = `${user.id}/${tripId}/${c.key}/${crypto.randomUUID()}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from("trip-photos")
-            .upload(path, file, { contentType: file.type, upsert: false });
-          if (upErr) throw upErr;
-          const { error: insErr } = await supabase.from("trip_photos").insert({
-            trip_id: tripId!,
-            category: c.key,
-            storage_path: path,
-            status: "pending",
-          });
-          if (insErr) throw insErr;
+        // Upload all photos for new trip
+        for (const c of PHOTO_CATEGORIES) {
+          const files = photos[c.key];
+          if (!files.length) continue;
+          for (const file of files) {
+            const ext = file.name.split(".").pop() || "jpg";
+            const path = `${user.id}/${tripId}/${c.key}/${crypto.randomUUID()}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("trip-photos")
+              .upload(path, file, { contentType: file.type, upsert: false });
+            if (upErr) throw upErr;
+            const { error: insErr } = await supabase.from("trip_photos").insert({
+              trip_id: tripId!,
+              category: c.key,
+              storage_path: path,
+              status: "pending",
+            });
+            if (insErr) throw insErr;
+          }
         }
       }
+
+      // Save notification preferences on the driver profile
+      const cleanUsername = prefs.telegram_username
+        .trim()
+        .replace(/^@+/, "")
+        .slice(0, 64);
+      await supabase
+        .from("profiles")
+        .update({
+          email_notifications: prefs.email_notifications,
+          telegram_notifications: prefs.telegram_notifications,
+          telegram_username: cleanUsername || null,
+        })
+        .eq("id", user.id);
 
       toast.success("Поїздку надіслано на перевірку");
       onDone();
