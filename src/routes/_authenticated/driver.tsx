@@ -431,6 +431,45 @@ function DriverForm({
               />
             </Field>
           </div>
+          <div className="space-y-3 rounded-lg border border-border p-3 bg-secondary/30">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm font-normal">
+                Отримувати повідомлення на Email
+              </Label>
+              <Switch
+                checked={prefs.email_notifications}
+                onCheckedChange={(v) =>
+                  setPrefs((p) => ({ ...p, email_notifications: v }))
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm font-normal">
+                Отримувати повідомлення в Telegram
+              </Label>
+              <Switch
+                checked={prefs.telegram_notifications}
+                onCheckedChange={(v) =>
+                  setPrefs((p) => ({ ...p, telegram_notifications: v }))
+                }
+              />
+            </div>
+            {prefs.telegram_notifications && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Ваш Telegram username (@username)</Label>
+                <Input
+                  placeholder="@username"
+                  value={prefs.telegram_username}
+                  onChange={(e) =>
+                    setPrefs((p) => ({ ...p, telegram_username: e.target.value }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Щоб отримувати повідомлення, відкрийте бота й натисніть <b>/start</b>.
+                </p>
+              </div>
+            )}
+          </div>
           <Field label={t.borderCrossing}>
             <Select
               value={form.border_crossing}
