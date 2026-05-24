@@ -18,23 +18,35 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          email_notifications: boolean
           full_name: string | null
           id: string
           phone: string | null
+          telegram_chat_id: number | null
+          telegram_notifications: boolean
+          telegram_username: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
+          email_notifications?: boolean
           full_name?: string | null
           id: string
           phone?: string | null
+          telegram_chat_id?: number | null
+          telegram_notifications?: boolean
+          telegram_username?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
+          email_notifications?: boolean
           full_name?: string | null
           id?: string
           phone?: string | null
+          telegram_chat_id?: number | null
+          telegram_notifications?: boolean
+          telegram_username?: string | null
         }
         Relationships: []
       }

@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/routes/_authenticated/admin";
+import { useServerFn } from "@tanstack/react-start";
+import { notifyTrip } from "@/lib/notifications.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/$tripId")({
   component: TripDetailPage,
@@ -42,6 +44,7 @@ function TripDetailPage() {
   const { tripId } = Route.useParams();
   const { roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const notify = useServerFn(notifyTrip);
   const [trip, setTrip] = useState<Trip | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -106,6 +109,11 @@ function TripDetailPage() {
           reviewed_at: new Date().toISOString(),
         })
         .eq("id", trip!.id);
+      try {
+        await notify({ data: { tripId: trip!.id, kind: "approved" } });
+      } catch (e) {
+        console.error("notify approved failed", e);
+      }
       toast.success("Поїздку затверджено");
       navigate({ to: "/admin" });
     } catch (e) {
@@ -150,6 +158,11 @@ function TripDetailPage() {
           reviewed_at: new Date().toISOString(),
         })
         .eq("id", trip!.id);
+      try {
+        await notify({ data: { tripId: trip!.id, kind: "rejected" } });
+      } catch (e) {
+        console.error("notify rejected failed", e);
+      }
       toast.success("Поїздку повернуто водієві");
       navigate({ to: "/admin" });
     } catch (e) {

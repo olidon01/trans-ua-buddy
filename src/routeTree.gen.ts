@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedDriverRouteImport } from './routes/_authenticated/driver'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicTelegramRouteImport } from './routes/api/public/telegram'
 import { Route as AuthenticatedAdminTripIdRouteImport } from './routes/_authenticated/admin/$tripId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -46,6 +47,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicTelegramRoute = ApiPublicTelegramRouteImport.update({
+  id: '/api/public/telegram',
+  path: '/api/public/telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminTripIdRoute =
   AuthenticatedAdminTripIdRouteImport.update({
     id: '/$tripId',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/driver': typeof AuthenticatedDriverRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/$tripId': typeof AuthenticatedAdminTripIdRoute
+  '/api/public/telegram': typeof ApiPublicTelegramRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/driver': typeof AuthenticatedDriverRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/$tripId': typeof AuthenticatedAdminTripIdRoute
+  '/api/public/telegram': typeof ApiPublicTelegramRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/_authenticated/driver': typeof AuthenticatedDriverRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/admin/$tripId': typeof AuthenticatedAdminTripIdRoute
+  '/api/public/telegram': typeof ApiPublicTelegramRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/driver'
     | '/auth/callback'
     | '/admin/$tripId'
+    | '/api/public/telegram'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/driver'
     | '/auth/callback'
     | '/admin/$tripId'
+    | '/api/public/telegram'
   id:
     | '__root__'
     | '/'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/_authenticated/driver'
     | '/auth/callback'
     | '/_authenticated/admin/$tripId'
+    | '/api/public/telegram'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -112,6 +124,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  ApiPublicTelegramRoute: typeof ApiPublicTelegramRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/telegram': {
+      id: '/api/public/telegram'
+      path: '/api/public/telegram'
+      fullPath: '/api/public/telegram'
+      preLoaderRoute: typeof ApiPublicTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/$tripId': {
       id: '/_authenticated/admin/$tripId'
       path: '/$tripId'
@@ -198,6 +218,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  ApiPublicTelegramRoute: ApiPublicTelegramRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
