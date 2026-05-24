@@ -220,8 +220,10 @@ function DriverForm({
     } else {
       const requiredCats = new Set(rejected.map((r) => r.category));
       for (const c of PHOTO_CATEGORIES) {
-        if (requiredCats.has(c.key) && photos[c.key].length === 0) {
-          toast.error(`${c.label}: завантажте нові фото замість відхилених`);
+        if (!requiredCats.has(c.key)) continue;
+        const needed = rejected.filter((r) => r.category === c.key).length;
+        if (photos[c.key].length !== needed) {
+          toast.error(`${c.label}: завантажте ${needed} фото замість відхилених`);
           return;
         }
       }
@@ -293,7 +295,14 @@ function DriverForm({
   }
 
   const isResubmit = !!existingTrip;
-  const rejectedByCat = new Set(rejected.map((r) => r.category));
+  const rejectedCountByCat = rejected.reduce<Record<string, number>>((acc, r) => {
+    acc[r.category] = (acc[r.category] ?? 0) + 1;
+    return acc;
+  }, {});
+  const rejectedByCatList = rejected.reduce<Record<string, typeof rejected>>((acc, r) => {
+    (acc[r.category] ||= []).push(r);
+    return acc;
+  }, {});
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
@@ -415,38 +424,25 @@ function DriverForm({
         </Section>
 
         <Section title={t.photos}>
-          {isResubmit && rejected.length > 0 && (
-            <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border text-xs space-y-2">
-              <div className="font-medium text-foreground">{t.rejectedPhotos}:</div>
-              <div className="grid grid-cols-3 gap-2">
-                {rejected.map((r) => (
-                  <div key={r.id} className="space-y-1">
-                    {r.signed_url && (
-                      <img
-                        src={r.signed_url}
-                        className="aspect-square w-full object-cover rounded-md border border-destructive/40"
-                        alt=""
-                      />
-                    )}
-                    {r.comment && (
-                      <p className="text-destructive text-[11px] leading-tight">{r.comment}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
           <div className="space-y-4">
             {PHOTO_CATEGORIES.map((c) => {
-              const needed = !isResubmit || rejectedByCat.has(c.key);
+              const rejectedInCat = rejectedByCatList[c.key] ?? [];
+              const needed = !isResubmit || rejectedInCat.length > 0;
+              const requiredCount = isResubmit ? rejectedInCat.length : c.count;
+              if (isResubmit && rejectedInCat.length === 0) return null;
               return (
                 <PhotoSlot
                   key={c.key}
                   category={c.key}
                   label={c.label}
-                  count={c.count}
+                  count={requiredCount}
                   files={photos[c.key]}
                   required={needed}
+                  rejectedItems={rejectedInCat.map((r) => ({
+                    id: r.id,
+                    signed_url: r.signed_url,
+                    comment: r.comment,
+                  }))}
                   onChange={(files) => handlePhotos(c.key, files, c.count)}
                 />
               );
@@ -496,12 +492,14 @@ function PhotoSlot({
   files,
   onChange,
   required,
+  rejectedItems,
 }: {
   category: string;
   label: string;
   count: number;
   files: File[];
   required: boolean;
+  rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
   onChange: (files: FileList | null) => void;
 }) {
   const id = `photo-${label}`;
@@ -517,6 +515,24 @@ function PhotoSlot({
         </Label>
         {files.length === count && <Check className="size-4 text-success" />}
       </div>
+      {rejectedItems && rejectedItems.length > 0 && (
+        <div className="mb-2 grid grid-cols-3 gap-2">
+          {rejectedItems.map((r) => (
+            <div key={r.id} className="space-y-1">
+              {r.signed_url && (
+                <img
+                  src={r.signed_url}
+                  className="aspect-square w-full object-cover rounded-md border-2 border-destructive"
+                  alt=""
+                />
+              )}
+              {r.comment && (
+                <p className="text-destructive text-[11px] leading-tight">{r.comment}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       <input
         id={id}
         type="file"
