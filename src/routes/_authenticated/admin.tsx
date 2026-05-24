@@ -22,6 +22,8 @@ type TripRow = {
 function AdminListPage() {
   const { roles, loading } = useAuth();
   const [trips, setTrips] = useState<TripRow[] | null>(null);
+  const routerState = useRouterState();
+  const isAdminIndex = routerState.location.pathname === "/admin";
 
   useEffect(() => {
     void load();
@@ -48,6 +50,8 @@ function AdminListPage() {
 
   if (loading) return <div className="p-6 text-muted-foreground">{t.loading}</div>;
   if (!isStaff(roles)) return <Navigate to="/driver" />;
+
+  if (!isAdminIndex) return <Outlet />;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
