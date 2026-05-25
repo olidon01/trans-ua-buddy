@@ -2,7 +2,8 @@ import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t, PHOTO_CATEGORIES, type PhotoCategoryKey } from "@/lib/i18n";
+import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
@@ -43,6 +44,7 @@ type Photo = {
 function TripDetailPage() {
   const { tripId } = Route.useParams();
   const { roles, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const notify = useServerFn(notifyTrip);
   const [trip, setTrip] = useState<Trip | null>(null);
@@ -224,7 +226,7 @@ function TripDetailPage() {
           if (!cps.length) return null;
           return (
             <section key={c.key}>
-              <h3 className="font-semibold mb-2">{c.label}</h3>
+              <h3 className="font-semibold mb-2">{getCategoryLabel(t, c.key)}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {cps.map((p) => (
                   <PhotoCard
@@ -298,6 +300,7 @@ function PhotoCard({
   onReject: () => void;
   editable: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <div
       className={`bg-card border rounded-xl overflow-hidden ${

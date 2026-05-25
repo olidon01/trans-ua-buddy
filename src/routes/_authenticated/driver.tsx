@@ -2,7 +2,8 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t, PHOTO_CATEGORIES, type PhotoCategoryKey } from "@/lib/i18n";
+import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ type TripRow = {
 
 function DriverPage() {
   const { user, roles } = useAuth();
+  const { t } = useLanguage();
   const [activeTrip, setActiveTrip] = useState<TripRow | null | undefined>(undefined);
 
   useEffect(() => {
@@ -85,6 +87,7 @@ function DriverPage() {
 }
 
 function WaitingScreen() {
+  const { t } = useLanguage();
   return (
     <div className="max-w-md mx-auto px-4 py-16 text-center">
       <div className="mx-auto size-20 rounded-full bg-warning/15 grid place-items-center mb-6">
@@ -117,6 +120,7 @@ function DriverForm({
   onDone: () => void;
 }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [form, setForm] = useState<FormState>({
     company_name: "",
     car_number: "",
@@ -238,7 +242,7 @@ function DriverForm({
     if (!existingTrip) {
       for (const c of PHOTO_CATEGORIES) {
         if (photos[c.key].length !== c.count) {
-          toast.error(`${c.label}: завантажте ${c.count} фото`);
+          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${c.count} фото`);
           return;
         }
       }
@@ -248,7 +252,7 @@ function DriverForm({
         if (!requiredCats.has(c.key)) continue;
         const needed = rejected.filter((r) => r.category === c.key).length;
         if (photos[c.key].length !== needed) {
-          toast.error(`${c.label}: завантажте ${needed} фото замість відхилених`);
+          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${needed} фото замість відхилених`);
           return;
         }
       }
@@ -532,7 +536,7 @@ function DriverForm({
                 <PhotoSlot
                   key={c.key}
                   category={c.key}
-                  label={c.label}
+                  label={getCategoryLabel(t, c.key)}
                   count={requiredCount}
                   files={photos[c.key]}
                   required={needed}
@@ -600,6 +604,7 @@ function PhotoSlot({
   rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
   onChange: (files: FileList | null) => void;
 }) {
+  const { t } = useLanguage();
   const id = `photo-${label}`;
   return (
     <div

@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, Outlet, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Truck, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthLayout() {
   const { session, loading, signOut, roles, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   if (loading) {
