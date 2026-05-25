@@ -1,3 +1,4 @@
+import "@/i18n"; // Initialize i18n before React renders
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
