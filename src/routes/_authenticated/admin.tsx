@@ -2,7 +2,7 @@ import { createFileRoute, Navigate, useNavigate, Outlet, useRouterState } from "
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronRight, Clock, Check, RotateCcw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -21,6 +21,7 @@ type TripRow = {
 
 function AdminListPage() {
   const { roles, loading } = useAuth();
+  const { t } = useLanguage();
   const [trips, setTrips] = useState<TripRow[] | null>(null);
   const routerState = useRouterState();
   const isAdminIndex = routerState.location.pathname === "/admin";
@@ -97,6 +98,7 @@ function TripCard({ trip }: { trip: TripRow }) {
 }
 
 export function StatusBadge({ status }: { status: TripRow["status"] }) {
+  const { t } = useLanguage();
   const map = {
     pending: { label: t.statusPending, Icon: Clock, cls: "bg-warning/15 text-warning" },
     approved: { label: t.statusApproved, Icon: Check, cls: "bg-success/15 text-success" },
