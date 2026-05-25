@@ -12,7 +12,7 @@ import plAdmin from "./locales/pl/admin.json";
 export const languages = ["uk", "pl"] as const;
 export type Language = (typeof languages)[number];
 
-const resources = {
+export const resources = {
   uk: {
     common: ukCommon,
     driver: ukDriver,
