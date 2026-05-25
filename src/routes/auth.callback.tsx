@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const { session, roles, loading } = useAuth();
+  const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [exchanging, setExchanging] = useState(true);
 
