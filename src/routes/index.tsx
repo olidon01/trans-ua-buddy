@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { t } from "@/lib/i18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -8,6 +8,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { session, roles, loading } = useAuth();
+  const { t } = useLanguage();
 
   if (loading) {
     return (
