@@ -387,7 +387,7 @@ function DriverForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Section title="Дані рейсу">
+        <Section title={t.tripDataSection}>
           <Field label={t.companyName}>
             <Input
               required
@@ -438,7 +438,7 @@ function DriverForm({
           <div className="space-y-3 rounded-lg border border-border p-3 bg-secondary/30">
             <div className="flex items-center justify-between gap-3">
               <Label className="text-sm font-normal">
-                Отримувати повідомлення на Email
+                {t.notifyEmail}
               </Label>
               <Switch
                 checked={prefs.email_notifications}
@@ -449,7 +449,7 @@ function DriverForm({
             </div>
             <div className="flex items-center justify-between gap-3">
               <Label className="text-sm font-normal">
-                Отримувати повідомлення в Telegram
+                {t.notifyTelegram}
               </Label>
               <Switch
                 checked={prefs.telegram_notifications}
@@ -460,16 +460,16 @@ function DriverForm({
             </div>
             {prefs.telegram_notifications && (
               <div className="space-y-1.5">
-                <Label className="text-sm">Ваш Telegram username (@username)</Label>
+                <Label className="text-sm">{t.telegramUsername}</Label>
                 <Input
-                  placeholder="@username"
+                  placeholder={t.telegramUsername}
                   value={prefs.telegram_username}
                   onChange={(e) =>
                     setPrefs((p) => ({ ...p, telegram_username: e.target.value }))
                   }
                 />
                 <p className="text-xs text-muted-foreground">
-                  Щоб отримувати повідомлення, відкрийте бота й натисніть <b>/start</b>.
+                  {t.telegramHint}
                 </p>
               </div>
             )}
@@ -480,7 +480,7 @@ function DriverForm({
               onValueChange={(v) => setForm({ ...form, border_crossing: v })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Оберіть пункт" />
+                <SelectValue placeholder={t.selectBorder} />
               </SelectTrigger>
               <SelectContent>
                 {t.borders.map((b) => (
