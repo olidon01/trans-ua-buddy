@@ -284,14 +284,12 @@ function PhotoCard({
   photo,
   comment,
   onComment,
-  onApprove,
   onReject,
   editable,
 }: {
   photo: Photo;
   comment: string;
   onComment: (v: string) => void;
-  onApprove: () => void;
   onReject: () => void;
   editable: boolean;
 }) {
@@ -299,11 +297,7 @@ function PhotoCard({
   return (
     <div
       className={`bg-card border rounded-xl overflow-hidden ${
-        photo.status === "approved"
-          ? "border-success"
-          : photo.status === "rejected"
-          ? "border-destructive"
-          : "border-border"
+        photo.status === "rejected" ? "border-destructive" : "border-border"
       }`}
     >
       {photo.url && (
@@ -313,25 +307,18 @@ function PhotoCard({
       )}
       {editable && (
         <div className="p-2 space-y-2">
-          <div className="grid grid-cols-2 gap-1.5">
-            <Button
-              type="button"
-              size="sm"
-              variant={photo.status === "approved" ? "default" : "outline"}
-              className={photo.status === "approved" ? "bg-success hover:bg-success/90" : ""}
-              onClick={onApprove}
-            >
-              <Check className="size-3.5" /> {t.approvePhoto}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={photo.status === "rejected" ? "destructive" : "outline"}
-              onClick={onReject}
-            >
-              <X className="size-3.5" /> {t.rejectPhoto}
-            </Button>
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant={photo.status === "rejected" ? "destructive" : "outline"}
+            className="w-full"
+            onClick={() =>
+              photo.status === "rejected" ? setPhotoStatus(photo.id, "approved") : onReject()
+            }
+          >
+            <X className="size-3.5 mr-1" />
+            {photo.status === "rejected" ? t.undoReject : t.rejectPhoto}
+          </Button>
           {photo.status === "rejected" && (
             <Textarea
               placeholder={t.photoComment}
