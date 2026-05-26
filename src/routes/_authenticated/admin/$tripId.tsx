@@ -177,6 +177,15 @@ function TripDetailPage() {
   const photosByCat = (cat: PhotoCategoryKey) => photos.filter((p) => p.category === cat);
   const editable = trip.status !== "approved";
 
+  const prev = trip.previous_data;
+  const showDiff = trip.status === "pending" && prev !== null;
+  function isChanged(field: string, current: string) {
+    if (!showDiff || !prev) return false;
+    return String(prev[field] ?? "") !== current;
+  }
+  const vinChanged =
+    showDiff && JSON.stringify(prev?.vin_last4) !== JSON.stringify(trip.vin_last4);
+
   function startEdit() {
     if (!trip) return;
     setEditDraft({
@@ -246,12 +255,12 @@ function TripDetailPage() {
       <div className="bg-card border border-border rounded-2xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
         {!isEditing ? (
           <>
-            <Info label={t.companyName} value={trip.company_name} />
-            <Info label={t.carNumber} value={trip.car_number} />
-            <Info label={t.trailerNumber} value={trip.trailer_number} />
-            <Info label={t.passportNumber} value={trip.passport_number} />
-            <Info label={t.phone} value={trip.phone} />
-            <Info label={t.borderCrossing} value={trip.border_crossing} />
+            <Info label={t.companyName} value={trip.company_name} changed={isChanged("company_name", trip.company_name)} />
+            <Info label={t.carNumber} value={trip.car_number} changed={isChanged("car_number", trip.car_number)} />
+            <Info label={t.trailerNumber} value={trip.trailer_number} changed={isChanged("trailer_number", trip.trailer_number)} />
+            <Info label={t.passportNumber} value={trip.passport_number} changed={isChanged("passport_number", trip.passport_number)} />
+            <Info label={t.phone} value={trip.phone} changed={isChanged("phone", trip.phone)} />
+            <Info label={t.borderCrossing} value={trip.border_crossing} changed={isChanged("border_crossing", trip.border_crossing)} />
           </>
         ) : (
           <>
@@ -263,7 +272,10 @@ function TripDetailPage() {
             <EditField label={t.borderCrossing} value={editDraft.border_crossing ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, border_crossing: v }))} />
           </>
         )}
-        <div className="col-span-2 sm:col-span-3">
+        <div
+          className="col-span-2 sm:col-span-3"
+          style={vinChanged ? { outline: "2px solid orange", borderRadius: "6px", padding: "4px" } : undefined}
+        >
           <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1">
             {t.vinList}
           </div>
@@ -335,9 +347,9 @@ function TripDetailPage() {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value, changed }: { label: string; value: string; changed?: boolean }) {
   return (
-    <div>
+    <div style={changed ? { outline: "2px solid orange", borderRadius: "6px", padding: "4px" } : undefined}>
       <div className="text-xs uppercase text-muted-foreground tracking-wide">{label}</div>
       <div className="font-medium">{value}</div>
     </div>
