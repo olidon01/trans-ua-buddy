@@ -159,6 +159,27 @@ function DriverForm({
     { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null }[]
   >([]);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validateField(name: string, value: string): string {
+    if (name === "full_name") {
+      if (!value.trim()) return t.required;
+      if (!/^[A-Za-z\s\-']+$/.test(value)) return t.validFullName;
+      if (value.trim().split(/\s+/).length < 2) return t.validFullName;
+    }
+    if (name === "phone") {
+      if (!value.trim()) return t.required;
+      if (!/^\+[1-9]\d{7,14}$/.test(value.trim())) return t.validPhone;
+    }
+    return "";
+  }
+
+  function validateTelegram(value: string): string {
+    if (!prefs.telegram_notifications) return "";
+    if (!value.trim()) return t.required;
+    if (!/^@[a-zA-Z0-9_]{4,31}$/.test(value.trim())) return t.validTelegram;
+    return "";
+  }
 
   // Load profile prefs once
   useEffect(() => {
@@ -240,6 +261,14 @@ function DriverForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+
+    const errors: Record<string, string> = {};
+    errors.full_name = validateField("full_name", form.full_name);
+    errors.phone = validateField("phone", form.phone);
+    errors.telegram = validateTelegram(prefs.telegram_username);
+    const hasErrors = Object.values(errors).some(Boolean);
+    setFieldErrors(errors);
+    if (hasErrors) return;
 
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
