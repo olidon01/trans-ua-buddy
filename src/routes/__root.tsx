@@ -79,9 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "VanLink — Логістика PL → UA" },
       { name: "description", content: "Платформа для перевезень авто з Польщі в Україну: фотозвіти водіїв та контроль документів." },
       { property: "og:title", content: "VanLink — Логістика PL → UA" },
-      { property: "og:description", content: "Платформа для перевезень авто з Польщі в Україну." },
+      { property: "og:description", content: "Платформа для перевезень авто з Польщі в Україну: фотозвіти водіїв та контроль документів." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "VanLink — Логістика PL → UA" },
+      { name: "twitter:description", content: "Платформа для перевезень авто з Польщі в Україну: фотозвіти водіїв та контроль документів." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f4a4082a-8715-4af4-9bda-58c56442119d/id-preview-5a6d585c--f1a75967-6ff3-4bbc-941e-8eec38d71547.lovable.app-1779801902652.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f4a4082a-8715-4af4-9bda-58c56442119d/id-preview-5a6d585c--f1a75967-6ff3-4bbc-941e-8eec38d71547.lovable.app-1779801902652.png" },
     ],
     links: [
       {
