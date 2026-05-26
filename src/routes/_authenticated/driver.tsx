@@ -280,7 +280,7 @@ function DriverForm({
     if (!existingTrip) {
       for (const c of PHOTO_CATEGORIES) {
         if (photos[c.key].length !== c.count) {
-          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${c.count} фото`);
+          toast.error(`${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
           return;
         }
       }
@@ -290,7 +290,7 @@ function DriverForm({
         if (!requiredCats.has(c.key)) continue;
         const needed = rejected.filter((r) => r.category === c.key).length;
         if (photos[c.key].length !== needed) {
-          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${needed} фото замість відхилених`);
+          toast.error(`${getCategoryLabel(t, c.key)}: ${needed} ${t.photoCountError}`);
           return;
         }
       }
@@ -374,7 +374,7 @@ function DriverForm({
       // Save notification preferences on the driver profile
       const cleanUsername = prefs.telegram_username
         .trim()
-        .replace(/^@+/, "")
+        .replace(/^@/, "")
         .slice(0, 64);
       await supabase
         .from("profiles")
