@@ -20,6 +20,10 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"magic" | "password">("magic");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [resetSent, setResetSent] = useState(false);
 
   if (!authLoading && session) return <Navigate to="/" />;
 
@@ -37,6 +41,46 @@ function LoginPage() {
       toast.error(error.message);
     } else {
       setSent(true);
+    }
+  }
+
+  async function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else if (!rememberMe) {
+      const key = Object.keys(localStorage).find((k) => k.includes("supabase"));
+      if (key) {
+        const val = localStorage.getItem(key);
+        if (val) {
+          sessionStorage.setItem(key, val);
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      toast.error("Введіть email вище");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setResetSent(true);
+      toast.success("Лист для відновлення надіслано");
     }
   }
 
@@ -67,23 +111,103 @@ function LoginPage() {
                 <p className="text-sm text-muted-foreground break-all">{email}</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t.emailLabel}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    placeholder={t.emailPlaceholder}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+              <>
+                <div className="grid grid-cols-2 gap-2 mb-4 p-1 bg-muted rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("magic")}
+                    className={`text-sm font-medium py-2 px-3 rounded-md transition ${
+                      activeTab === "magic"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    ✉ Посилання на пошту
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("password")}
+                    className={`text-sm font-medium py-2 px-3 rounded-md transition ${
+                      activeTab === "password"
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    🔒 Пароль
+                  </button>
                 </div>
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? t.loading : t.sendMagicLink}
-                </Button>
-              </form>
+                {activeTab === "magic" ? (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">{t.emailLabel}</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        placeholder={t.emailPlaceholder}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                      {loading ? t.loading : t.sendMagicLink}
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-pw">{t.emailLabel}</Label>
+                      <Input
+                        id="email-pw"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        placeholder={t.emailPlaceholder}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Пароль</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        required
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="rounded border-border"
+                      />
+                      Запам'ятати мене
+                    </label>
+                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                      {loading ? t.loading : "Увійти"}
+                    </Button>
+                    <div className="text-center">
+                      {resetSent ? (
+                        <span className="text-sm text-success">Лист надіслано ✓</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleForgotPassword}
+                          disabled={loading}
+                          className="text-sm text-muted-foreground hover:text-foreground underline"
+                        >
+                          Забули пароль?
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
+              </>
             )}
           </div>
         </div>
