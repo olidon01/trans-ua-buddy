@@ -98,13 +98,38 @@ function AdminListPage() {
     <div className="max-w-5xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">{t.trips}</h1>
 
+      <div className="flex gap-2 mb-4">
+        <input
+          type="search"
+          placeholder="Пошук за ім'ям, VIN, номером авто..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-background"
+        />
+        <button
+          type="button"
+          onClick={() => setShowStats((v) => !v)}
+          className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-secondary"
+        >
+          📊
+        </button>
+      </div>
+
+      {showStats && (
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <StatCard label="Поїздок цього місяця" value={String(thisMonthTrips.length)} />
+          <StatCard label="Сер. час верифікації" value={`${avgHours} год`} />
+          <StatCard label="Відсоток відхилень" value={`${resubmitPct}%`} />
+        </div>
+      )}
+
       {trips === null ? (
         <div className="text-muted-foreground">{t.loading}</div>
-      ) : trips.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">{t.noTrips}</div>
       ) : (
         <div className="space-y-2">
-          {trips.map((trip) => (
+          {filtered.map((trip) => (
             <TripCard key={trip.id} trip={trip} />
           ))}
         </div>
