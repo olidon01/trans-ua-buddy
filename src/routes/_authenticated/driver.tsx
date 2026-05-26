@@ -304,6 +304,22 @@ function DriverForm({
     return "";
   }
 
+  async function savePrefsToDb(updated: typeof prefs) {
+    if (!user) return;
+    const cleanUsername = updated.telegram_username
+      .trim()
+      .replace(/^@/, "")
+      .slice(0, 64);
+    await supabase
+      .from("profiles")
+      .update({
+        email_notifications: updated.email_notifications,
+        telegram_notifications: updated.telegram_notifications,
+        telegram_username: cleanUsername || null,
+      })
+      .eq("id", user.id);
+  }
+
   // Load profile prefs once
   useEffect(() => {
     if (!user) return;
