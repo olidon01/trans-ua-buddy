@@ -116,7 +116,7 @@ function TripDetailPage() {
       } catch (e) {
         console.error("notify approved failed", e);
       }
-      toast.success("Поїздку затверджено");
+      toast.success(t.tripApproved);
       navigate({ to: "/admin" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t.error);
@@ -128,11 +128,11 @@ function TripDetailPage() {
   async function sendBack() {
     const rejectedIds = photos.filter((p) => p.status === "rejected").map((p) => p.id);
     if (!rejectedIds.length) {
-      toast.error("Позначте відхилені фото або затвердіть поїздку");
+      toast.error(t.markRejectedFirst);
       return;
     }
     if (!adminComment.trim()) {
-      toast.error("Додайте коментар водієві");
+      toast.error(t.addPhotoComment);
       return;
     }
     setBusy(true);
@@ -165,7 +165,7 @@ function TripDetailPage() {
       } catch (e) {
         console.error("notify rejected failed", e);
       }
-      toast.success("Поїздку повернуто водієві");
+      toast.success(t.tripReturnedToDriver);
       navigate({ to: "/admin" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t.error);

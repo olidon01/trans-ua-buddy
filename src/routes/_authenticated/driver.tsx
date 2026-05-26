@@ -234,7 +234,7 @@ function DriverForm({
 
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
-      toast.error("Заповніть усі поля коректно");
+      toast.error(t.formInvalid);
       return;
     }
 
@@ -347,10 +347,10 @@ function DriverForm({
         })
         .eq("id", user.id);
 
-      toast.success("Поїздку надіслано на перевірку");
+      toast.success(t.tripSubmitted);
       onDone();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Помилка надсилання";
+      const msg = err instanceof Error ? err.message : t.submitError;
       toast.error(msg);
     } finally {
       setSubmitting(false);
