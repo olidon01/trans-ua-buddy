@@ -297,9 +297,8 @@ function DriverForm({
     }
 
     setSubmitting(true);
+    let tripId = existingTrip?.id;
     try {
-      let tripId = existingTrip?.id;
-
       if (existingTrip) {
         // update trip data, set status back to pending
         const { error } = await supabase
@@ -388,6 +387,29 @@ function DriverForm({
       toast.success(t.tripSubmitted);
       onDone();
     } catch (err: unknown) {
+      // If we just created a new trip this attempt and upload failed,
+      // delete the partial trip so the driver can retry cleanly
+      if (!existingTrip && tripId) {
+        try {
+          const { data: partial } = await supabase
+            .from("trip_photos")
+            .select("storage_path")
+            .eq("trip_id", tripId);
+          if (partial?.length) {
+            await supabase.storage
+              .from("trip-photos")
+              .remove(partial.map((p) => p.storage_path));
+            await supabase
+              .from("trip_photos")
+              .delete()
+              .eq("trip_id", tripId);
+          }
+          await supabase.from("trips").delete().eq("id", tripId);
+        } catch {
+          // best-effort cleanup — ignore secondary errors
+        }
+        tripId = undefined;
+      }
       const msg = err instanceof Error ? err.message : t.submitError;
       toast.error(msg);
     } finally {
