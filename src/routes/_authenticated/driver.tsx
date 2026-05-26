@@ -103,9 +103,18 @@ const tripSchema = z.object({
   company_name: z.string().trim().min(1).max(120),
   car_number: z.string().trim().min(1).max(30),
   trailer_number: z.string().trim().min(1).max(30),
-  full_name: z.string().trim().min(1).max(120),
+  full_name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .regex(/^[A-Za-z\s\-']+$/, "validFullName")
+    .refine((v) => v.trim().split(/\s+/).length >= 2, "validFullName"),
   passport_number: z.string().trim().min(1).max(30),
-  phone: z.string().trim().min(5).max(30),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{7,14}$/, "validPhone"),
   border_crossing: z.string().trim().min(1).max(80),
   vin_last4: z.array(z.string().regex(/^\d{4}$/)).min(1).max(20),
 });
