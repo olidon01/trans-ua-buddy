@@ -230,7 +230,7 @@ function TripDetailPage() {
                     photo={p}
                     comment={comments[p.id] ?? ""}
                     onComment={(v) => setComments((m) => ({ ...m, [p.id]: v }))}
-                    onReject={() => setPhotoStatus(p.id, "rejected")}
+                    onReject={() => setPhotoStatus(p.id, p.status === "rejected" ? "approved" : "rejected")}
                     editable={editable}
                   />
                 ))}
@@ -312,9 +312,7 @@ function PhotoCard({
             size="sm"
             variant={photo.status === "rejected" ? "destructive" : "outline"}
             className="w-full"
-            onClick={() =>
-              photo.status === "rejected" ? setPhotoStatus(photo.id, "approved") : onReject()
-            }
+            onClick={onReject}
           >
             <X className="size-3.5 mr-1" />
             {photo.status === "rejected" ? t.undoReject : t.rejectPhoto}
