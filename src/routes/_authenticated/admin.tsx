@@ -178,3 +178,12 @@ export function StatusBadge({ status }: { status: TripRow["status"] }) {
     </span>
   );
 }
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 text-center">
+      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-xs text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
