@@ -13,6 +13,7 @@ function AuthCallback() {
   const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [exchanging, setExchanging] = useState(true);
+  const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -23,6 +24,14 @@ function AuthCallback() {
       setError(decodeURIComponent(errDesc));
       setExchanging(false);
       return;
+    }
+
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const recoveryDetected =
+      hashParams.get("type") === "recovery" ||
+      url.searchParams.get("type") === "recovery";
+    if (recoveryDetected) {
+      setIsRecovery(true);
     }
 
     if (code) {
@@ -56,6 +65,7 @@ function AuthCallback() {
   }
 
   if (!session) return <Navigate to="/login" />;
+  if (isRecovery && session) return <Navigate to="/set-password" />;
   if (isStaff(roles)) return <Navigate to="/admin" />;
   return <Navigate to="/driver" />;
 }
