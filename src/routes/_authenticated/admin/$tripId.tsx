@@ -177,6 +177,7 @@ function TripDetailPage() {
   const editable = trip.status !== "approved";
 
   function startEdit() {
+    if (!trip) return;
     setEditDraft({
       company_name: trip.company_name,
       car_number: trip.car_number,
@@ -203,7 +204,7 @@ function TripDetailPage() {
     setTrip({ ...trip, ...editDraft, admin_comment: newComment } as Trip);
     setAdminComment(newComment);
     setIsEditing(false);
-    toast.success(t.saved ?? "OK");
+    toast.success("OK");
   }
 
   return (
