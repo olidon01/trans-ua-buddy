@@ -1,0 +1,1 @@
+ALTER TABLE trip_photos ADD COLUMN IF NOT EXISTS vin_index integer NOT NULL DEFAULT 0;
