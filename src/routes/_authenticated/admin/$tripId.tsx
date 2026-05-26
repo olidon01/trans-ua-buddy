@@ -6,7 +6,7 @@ import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
+import { ArrowLeft, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/routes/_authenticated/admin";
 import { useServerFn } from "@tanstack/react-start";
@@ -131,10 +131,6 @@ function TripDetailPage() {
       toast.error(t.markRejectedFirst);
       return;
     }
-    if (!adminComment.trim()) {
-      toast.error(t.addPhotoComment);
-      return;
-    }
     setBusy(true);
     try {
       // Update each rejected photo with its comment
@@ -144,8 +140,8 @@ function TripDetailPage() {
           .update({ status: "rejected", comment: comments[p.id] || null })
           .eq("id", p.id);
       }
-      // Approved photos kept as approved
-      const approvedIds = photos.filter((p) => p.status === "approved").map((p) => p.id);
+      // Auto-approve all non-rejected photos
+      const approvedIds = photos.filter((p) => p.status !== "rejected").map((p) => p.id);
       if (approvedIds.length) {
         await supabase
           .from("trip_photos")
@@ -229,12 +225,11 @@ function TripDetailPage() {
               <h3 className="font-semibold mb-2">{getCategoryLabel(t, c.key)}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {cps.map((p) => (
-                  <PhotoCard
+                <PhotoCard
                     key={p.id}
                     photo={p}
                     comment={comments[p.id] ?? ""}
                     onComment={(v) => setComments((m) => ({ ...m, [p.id]: v }))}
-                    onApprove={() => setPhotoStatus(p.id, "approved")}
                     onReject={() => setPhotoStatus(p.id, "rejected")}
                     editable={editable}
                   />
@@ -249,7 +244,7 @@ function TripDetailPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border p-3 z-20">
           <div className="max-w-3xl mx-auto space-y-2">
             <Textarea
-              placeholder={t.rejectionComment}
+              placeholder={t.rejectionCommentOptional}
               value={adminComment}
               onChange={(e) => setAdminComment(e.target.value)}
               rows={2}
