@@ -449,11 +449,23 @@ function DriverForm({
               />
             </Field>
           </div>
-          <Field label={t.fullName}>
+          <Field label={t.fullName} error={fieldErrors.full_name}>
             <Input
               required
               value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              onChange={(e) => {
+                setForm({ ...form, full_name: e.target.value });
+                if (fieldErrors.full_name) {
+                  setFieldErrors((prev) => ({ ...prev, full_name: "" }));
+                }
+              }}
+              onBlur={(e) =>
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  full_name: validateField("full_name", e.target.value),
+                }))
+              }
+              className={fieldErrors.full_name ? "border-destructive" : ""}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -464,12 +476,24 @@ function DriverForm({
                 onChange={(e) => setForm({ ...form, passport_number: e.target.value })}
               />
             </Field>
-            <Field label={t.phone}>
+            <Field label={t.phone} error={fieldErrors.phone}>
               <Input
                 required
                 type="tel"
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, phone: e.target.value });
+                  if (fieldErrors.phone) {
+                    setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                  }
+                }}
+                onBlur={(e) =>
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    phone: validateField("phone", e.target.value),
+                  }))
+                }
+                className={fieldErrors.phone ? "border-destructive" : ""}
               />
             </Field>
           </div>
@@ -502,10 +526,23 @@ function DriverForm({
                 <Input
                   placeholder={t.telegramUsername}
                   value={prefs.telegram_username}
-                  onChange={(e) =>
-                    setPrefs((p) => ({ ...p, telegram_username: e.target.value }))
+                  onChange={(e) => {
+                    setPrefs((p) => ({ ...p, telegram_username: e.target.value }));
+                    if (fieldErrors.telegram) {
+                      setFieldErrors((prev) => ({ ...prev, telegram: "" }));
+                    }
+                  }}
+                  onBlur={(e) =>
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      telegram: validateTelegram(e.target.value),
+                    }))
                   }
+                  className={fieldErrors.telegram ? "border-destructive" : ""}
                 />
+                {fieldErrors.telegram && (
+                  <p className="text-xs text-destructive">{fieldErrors.telegram}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {t.telegramHint}
                 </p>
