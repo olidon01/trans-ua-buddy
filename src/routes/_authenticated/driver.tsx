@@ -347,10 +347,10 @@ function DriverForm({
         })
         .eq("id", user.id);
 
-      toast.success("Поїздку надіслано на перевірку");
+      toast.success(t.tripSubmitted);
       onDone();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Помилка надсилання";
+      const msg = err instanceof Error ? err.message : t.submitError;
       toast.error(msg);
     } finally {
       setSubmitting(false);
