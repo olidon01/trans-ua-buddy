@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate, Outlet, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth, isStaff } from "@/hooks/use-auth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Truck, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -45,6 +46,7 @@ function AuthLayout() {
             </span>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <span className="hidden sm:inline text-xs text-muted-foreground max-w-[180px] truncate">
               {user?.email}
             </span>
