@@ -359,6 +359,16 @@ function DriverForm({
           border_crossing: trip.border_crossing,
           vin_last4: trip.vin_last4?.length ? trip.vin_last4 : [""],
         });
+        setOriginalData({
+          company_name: trip.company_name,
+          car_number: trip.car_number,
+          trailer_number: trip.trailer_number,
+          full_name: trip.full_name,
+          passport_number: trip.passport_number,
+          phone: trip.phone,
+          border_crossing: trip.border_crossing,
+          vin_last4: trip.vin_last4?.length ? trip.vin_last4 : [""],
+        });
       }
       const { data: rj } = await supabase
         .from("trip_photos")
