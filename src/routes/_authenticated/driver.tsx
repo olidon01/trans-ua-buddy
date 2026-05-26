@@ -407,25 +407,20 @@ function DriverForm({
   }
 
   function addVin() {
-    setForm((f) => {
-      const next = [...f.vin_last4, ""];
-      setPhotos((p) => ({ ...p, [next.length - 1]: emptyCarPhotos() }));
-      return { ...f, vin_last4: next };
-    });
+    setForm((f) => ({ ...f, vin_last4: [...f.vin_last4, ""] }));
+    setPhotos((p) => ({ ...p, [Object.keys(p).length]: emptyCarPhotos() }));
   }
   function removeVin(i: number) {
-    setForm((f) => {
-      const next = f.vin_last4.filter((_, idx) => idx !== i);
-      setPhotos((p) => {
-        const result: Record<number, Record<PhotoCategoryKey, File[]>> = {};
-        let newIdx = 0;
-        for (let j = 0; j < f.vin_last4.length; j++) {
-          if (j === i) continue;
-          result[newIdx++] = p[j] ?? emptyCarPhotos();
-        }
-        return result;
-      });
-      return { ...f, vin_last4: next };
+    setForm((f) => ({ ...f, vin_last4: f.vin_last4.filter((_, idx) => idx !== i) }));
+    setPhotos((p) => {
+      const keys = Object.keys(p).map(Number).sort((a, b) => a - b);
+      const result: Record<number, Record<PhotoCategoryKey, File[]>> = {};
+      let newIdx = 0;
+      for (const j of keys) {
+        if (j === i) continue;
+        result[newIdx++] = p[j] ?? emptyCarPhotos();
+      }
+      return result;
     });
   }
 
