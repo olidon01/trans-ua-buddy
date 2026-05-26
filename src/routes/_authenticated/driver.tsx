@@ -307,7 +307,7 @@ function DriverForm({
   function validateTelegram(value: string): string {
     if (!prefs.telegram_notifications) return "";
     if (!value.trim()) return t.required;
-    if (!/^@[a-zA-Z0-9_]{4,31}$/.test(value.trim())) return t.validTelegram;
+    if (!/^@?[a-zA-Z0-9_]{4,31}$/.test(value.trim())) return t.validTelegram;
     return "";
   }
 
