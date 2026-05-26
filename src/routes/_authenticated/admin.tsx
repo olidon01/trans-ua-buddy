@@ -59,6 +59,36 @@ function AdminListPage() {
     setTrips((data as TripRow[]) ?? []);
   }
 
+  const filtered = !trips ? [] : trips.filter((trip) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return (
+      trip.full_name.toLowerCase().includes(q) ||
+      trip.car_number.toLowerCase().includes(q) ||
+      trip.trailer_number?.toLowerCase().includes(q) ||
+      trip.vin_last4?.some((v) => v.includes(q))
+    );
+  });
+
+  const now = new Date();
+  const thisMonthTrips = (trips ?? []).filter((t) => {
+    const d = new Date(t.created_at);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const reviewed = (trips ?? []).filter((t) => t.reviewed_at);
+  const avgHours = reviewed.length
+    ? Math.round(
+        reviewed.reduce(
+          (sum, t) =>
+            sum + (new Date(t.reviewed_at!).getTime() - new Date(t.created_at).getTime()),
+          0,
+        ) / reviewed.length / 1000 / 60 / 60,
+      )
+    : 0;
+  const resubmitPct = (trips ?? []).length
+    ? Math.round(((trips ?? []).filter((t) => t.status === "resubmit").length / (trips ?? []).length) * 100)
+    : 0;
+
   if (loading) return <div className="p-6 text-muted-foreground">{t.loading}</div>;
   if (!isStaff(roles)) return <Navigate to="/driver" />;
 
