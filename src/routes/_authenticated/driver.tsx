@@ -263,6 +263,7 @@ function DriverForm({
     border_crossing: "",
     vin_last4: [""],
   });
+  const [originalData, setOriginalData] = useState<Partial<FormState> | null>(null);
   const [prefs, setPrefs] = useState({
     email_notifications: true,
     telegram_notifications: true,
@@ -349,6 +350,16 @@ function DriverForm({
         .maybeSingle();
       if (trip) {
         setForm({
+          company_name: trip.company_name,
+          car_number: trip.car_number,
+          trailer_number: trip.trailer_number,
+          full_name: trip.full_name,
+          passport_number: trip.passport_number,
+          phone: trip.phone,
+          border_crossing: trip.border_crossing,
+          vin_last4: trip.vin_last4?.length ? trip.vin_last4 : [""],
+        });
+        setOriginalData({
           company_name: trip.company_name,
           car_number: trip.car_number,
           trailer_number: trip.trailer_number,
@@ -453,16 +464,7 @@ function DriverForm({
             ...parsed.data,
             status: "pending",
             admin_comment: null,
-            previous_data: {
-              company_name: form.company_name,
-              car_number: form.car_number,
-              trailer_number: form.trailer_number,
-              full_name: form.full_name,
-              passport_number: form.passport_number,
-              phone: form.phone,
-              border_crossing: form.border_crossing,
-              vin_last4: form.vin_last4,
-            },
+            previous_data: originalData ?? null,
           })
           .eq("id", existingTrip.id);
         if (error) throw error;
