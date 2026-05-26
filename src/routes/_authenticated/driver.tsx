@@ -263,6 +263,7 @@ function DriverForm({
     border_crossing: "",
     vin_last4: [""],
   });
+  const [originalData, setOriginalData] = useState<Partial<FormState> | null>(null);
   const [prefs, setPrefs] = useState({
     email_notifications: true,
     telegram_notifications: true,
