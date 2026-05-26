@@ -658,9 +658,11 @@ function DriverForm({
               </Label>
               <Switch
                 checked={prefs.email_notifications}
-                onCheckedChange={(v) =>
-                  setPrefs((p) => ({ ...p, email_notifications: v }))
-                }
+                onCheckedChange={(v) => {
+                  const updated = { ...prefs, email_notifications: v };
+                  setPrefs(updated);
+                  void savePrefsToDb(updated);
+                }}
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -669,9 +671,11 @@ function DriverForm({
               </Label>
               <Switch
                 checked={prefs.telegram_notifications}
-                onCheckedChange={(v) =>
-                  setPrefs((p) => ({ ...p, telegram_notifications: v }))
-                }
+                onCheckedChange={(v) => {
+                  const updated = { ...prefs, telegram_notifications: v };
+                  setPrefs(updated);
+                  void savePrefsToDb(updated);
+                }}
               />
             </div>
             {prefs.telegram_notifications && (
@@ -686,12 +690,15 @@ function DriverForm({
                       setFieldErrors((prev) => ({ ...prev, telegram: "" }));
                     }
                   }}
-                  onBlur={(e) =>
+                  onBlur={(e) => {
+                    const val = e.target.value;
                     setFieldErrors((prev) => ({
                       ...prev,
-                      telegram: validateTelegram(e.target.value),
-                    }))
-                  }
+                      telegram: validateTelegram(val),
+                    }));
+                    const updated = { ...prefs, telegram_username: val };
+                    void savePrefsToDb(updated);
+                  }}
                   className={fieldErrors.telegram ? "border-destructive" : ""}
                 />
                 {fieldErrors.telegram && (
