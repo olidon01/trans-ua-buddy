@@ -845,6 +845,7 @@ function DriverForm({
                             id: r.id, signed_url: r.signed_url, comment: r.comment,
                           }))}
                           onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
+                          vinIndex={vi}
                         />
                       );
                     })
@@ -859,6 +860,7 @@ function DriverForm({
                         required={true}
                         rejectedItems={[]}
                         onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
+                        vinIndex={vi}
                       />
                     ))
                   )}
@@ -920,6 +922,8 @@ function PhotoSlot({
   onChange,
   required,
   rejectedItems,
+  vinIndex,
+  category,
 }: {
   category: string;
   label: string;
@@ -928,9 +932,10 @@ function PhotoSlot({
   required: boolean;
   rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
   onChange: (files: FileList | null) => void;
+  vinIndex: number;
 }) {
   const { t } = useLanguage();
-  const id = `photo-${label}`;
+  const id = `photo-${vinIndex}-${category}`;
   return (
     <div
       className={`rounded-xl border-2 border-dashed p-3 transition-colors ${
