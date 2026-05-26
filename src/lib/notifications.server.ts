@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 function appUrl(): string {
-  return (process.env.APP_URL ?? "").replace(/\/$/, "");
+  return (process.env.APP_URL ?? "https://trans-ua-buddy.lovable.app").replace(/\/$/, "");
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
