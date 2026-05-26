@@ -291,7 +291,11 @@ function StatusTimeline({ trip }: { trip: Trip }) {
       done: true,
     },
     {
-      label: trip.status === "approved" ? t.tripApproved : t.rejectAndSendBack,
+      label: !trip.reviewed_at
+        ? t.timelinePending
+        : trip.status === "approved"
+        ? t.timelineApproved
+        : t.timelineReturned,
       time: trip.reviewed_at,
       done: !!trip.reviewed_at,
     },
