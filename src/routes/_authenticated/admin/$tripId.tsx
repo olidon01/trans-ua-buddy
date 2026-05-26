@@ -6,7 +6,7 @@ import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, X, Loader2 } from "lucide-react";
+import { ArrowLeft, X, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/routes/_authenticated/admin";
 import { useServerFn } from "@tanstack/react-start";
@@ -53,6 +53,8 @@ function TripDetailPage() {
   const [comments, setComments] = useState<Record<string, string>>({});
   const [adminComment, setAdminComment] = useState("");
   const [busy, setBusy] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState<Partial<Trip>>({});
 
   useEffect(() => {
     void load();
@@ -174,6 +176,37 @@ function TripDetailPage() {
   const photosByCat = (cat: PhotoCategoryKey) => photos.filter((p) => p.category === cat);
   const editable = trip.status !== "approved";
 
+  function startEdit() {
+    if (!trip) return;
+    setEditDraft({
+      company_name: trip.company_name,
+      car_number: trip.car_number,
+      trailer_number: trip.trailer_number,
+      passport_number: trip.passport_number,
+      phone: trip.phone,
+      border_crossing: trip.border_crossing,
+    });
+    setIsEditing(true);
+  }
+
+  async function saveEdit() {
+    if (!trip) return;
+    const stamp = new Date().toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+    const newComment = `${trip.admin_comment ?? ""}${trip.admin_comment ? "\n" : ""}[Відредаговано о ${stamp}]`;
+    const { error } = await supabase
+      .from("trips")
+      .update({ ...editDraft, admin_comment: newComment })
+      .eq("id", trip.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setTrip({ ...trip, ...editDraft, admin_comment: newComment } as Trip);
+    setAdminComment(newComment);
+    setIsEditing(false);
+    toast.success("OK");
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 pb-32">
       <Link
@@ -194,13 +227,42 @@ function TripDetailPage() {
       </div>
 
       <StatusTimeline trip={trip} />
+      <div className="flex justify-end gap-2 mb-2">
+        {!isEditing ? (
+          <Button type="button" variant="ghost" size="sm" onClick={startEdit}>
+            <Pencil className="size-3.5 mr-1" /> Редагувати
+          </Button>
+        ) : (
+          <>
+            <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+              Скасувати
+            </Button>
+            <Button type="button" size="sm" onClick={saveEdit}>
+              Зберегти
+            </Button>
+          </>
+        )}
+      </div>
       <div className="bg-card border border-border rounded-2xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-        <Info label={t.companyName} value={trip.company_name} />
-        <Info label={t.carNumber} value={trip.car_number} />
-        <Info label={t.trailerNumber} value={trip.trailer_number} />
-        <Info label={t.passportNumber} value={trip.passport_number} />
-        <Info label={t.phone} value={trip.phone} />
-        <Info label={t.borderCrossing} value={trip.border_crossing} />
+        {!isEditing ? (
+          <>
+            <Info label={t.companyName} value={trip.company_name} />
+            <Info label={t.carNumber} value={trip.car_number} />
+            <Info label={t.trailerNumber} value={trip.trailer_number} />
+            <Info label={t.passportNumber} value={trip.passport_number} />
+            <Info label={t.phone} value={trip.phone} />
+            <Info label={t.borderCrossing} value={trip.border_crossing} />
+          </>
+        ) : (
+          <>
+            <EditField label={t.companyName} value={editDraft.company_name ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, company_name: v }))} />
+            <EditField label={t.carNumber} value={editDraft.car_number ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, car_number: v }))} />
+            <EditField label={t.trailerNumber} value={editDraft.trailer_number ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, trailer_number: v }))} />
+            <EditField label={t.passportNumber} value={editDraft.passport_number ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, passport_number: v }))} />
+            <EditField label={t.phone} value={editDraft.phone ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, phone: v }))} />
+            <EditField label={t.borderCrossing} value={editDraft.border_crossing ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, border_crossing: v }))} />
+          </>
+        )}
         <div className="col-span-2 sm:col-span-3">
           <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1">
             {t.vinList}
@@ -278,6 +340,19 @@ function Info({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-xs uppercase text-muted-foreground tracking-wide">{label}</div>
       <div className="font-medium">{value}</div>
+    </div>
+  );
+}
+
+function EditField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1">{label}</div>
+      <input
+        className="border rounded px-2 py-1 text-sm w-full"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
