@@ -710,12 +710,19 @@ function DriverForm({
               </div>
             )}
           </div>
-          <Field label={t.borderCrossing}>
+          <Field label={t.borderCrossing} error={fieldErrors.border_crossing}>
             <Select
               value={form.border_crossing}
-              onValueChange={(v) => setForm({ ...form, border_crossing: v })}
+              onValueChange={(v) => {
+                setForm({ ...form, border_crossing: v });
+                if (fieldErrors.border_crossing) {
+                  setFieldErrors((prev) => ({ ...prev, border_crossing: "" }));
+                }
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={fieldErrors.border_crossing ? "border-destructive" : ""}
+              >
                 <SelectValue placeholder={t.selectBorder} />
               </SelectTrigger>
               <SelectContent>
