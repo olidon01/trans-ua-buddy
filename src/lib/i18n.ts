@@ -75,6 +75,8 @@ export const translations = {
     validPhone: "Починається з + та коду країни (напр. +48600123456)",
     validTelegram: "Username має починатися з @ (напр. @username)",
     photoCountError: "фото потрібно",
+    undoReject: "Скасувати відхилення",
+    rejectionCommentOptional: "Загальний коментар водієві (необов'язково)",
     borders: [
       "Дорогуськ — Ягодин",
       "Гребенне — Рава-Руська",
@@ -161,6 +163,8 @@ export const translations = {
     validPhone: "Zaczyna się od + i kodu kraju (np. +48600123456)",
     validTelegram: "Username musi zaczynać się od @ (np. @username)",
     photoCountError: "zdjęć wymaganych",
+    undoReject: "Cofnij odrzucenie",
+    rejectionCommentOptional: "Ogólny komentarz do kierowcy (opcjonalnie)",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
