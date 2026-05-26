@@ -103,9 +103,18 @@ const tripSchema = z.object({
   company_name: z.string().trim().min(1).max(120),
   car_number: z.string().trim().min(1).max(30),
   trailer_number: z.string().trim().min(1).max(30),
-  full_name: z.string().trim().min(1).max(120),
+  full_name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .regex(/^[A-Za-z\s\-']+$/, "validFullName")
+    .refine((v) => v.trim().split(/\s+/).length >= 2, "validFullName"),
   passport_number: z.string().trim().min(1).max(30),
-  phone: z.string().trim().min(5).max(30),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{7,14}$/, "validPhone"),
   border_crossing: z.string().trim().min(1).max(80),
   vin_last4: z.array(z.string().regex(/^\d{4}$/)).min(1).max(20),
 });
@@ -150,6 +159,27 @@ function DriverForm({
     { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null }[]
   >([]);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validateField(name: string, value: string): string {
+    if (name === "full_name") {
+      if (!value.trim()) return t.required;
+      if (!/^[A-Za-z\s\-']+$/.test(value)) return t.validFullName;
+      if (value.trim().split(/\s+/).length < 2) return t.validFullName;
+    }
+    if (name === "phone") {
+      if (!value.trim()) return t.required;
+      if (!/^\+[1-9]\d{7,14}$/.test(value.trim())) return t.validPhone;
+    }
+    return "";
+  }
+
+  function validateTelegram(value: string): string {
+    if (!prefs.telegram_notifications) return "";
+    if (!value.trim()) return t.required;
+    if (!/^@[a-zA-Z0-9_]{4,31}$/.test(value.trim())) return t.validTelegram;
+    return "";
+  }
 
   // Load profile prefs once
   useEffect(() => {
@@ -232,6 +262,14 @@ function DriverForm({
     e.preventDefault();
     if (!user) return;
 
+    const errors: Record<string, string> = {};
+    errors.full_name = validateField("full_name", form.full_name);
+    errors.phone = validateField("phone", form.phone);
+    errors.telegram = validateTelegram(prefs.telegram_username);
+    const hasErrors = Object.values(errors).some(Boolean);
+    setFieldErrors(errors);
+    if (hasErrors) return;
+
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
       toast.error(t.formInvalid);
@@ -242,7 +280,7 @@ function DriverForm({
     if (!existingTrip) {
       for (const c of PHOTO_CATEGORIES) {
         if (photos[c.key].length !== c.count) {
-          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${c.count} фото`);
+          toast.error(`${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
           return;
         }
       }
@@ -252,7 +290,7 @@ function DriverForm({
         if (!requiredCats.has(c.key)) continue;
         const needed = rejected.filter((r) => r.category === c.key).length;
         if (photos[c.key].length !== needed) {
-          toast.error(`${getCategoryLabel(t, c.key)}: завантажте ${needed} фото замість відхилених`);
+          toast.error(`${getCategoryLabel(t, c.key)}: ${needed} ${t.photoCountError}`);
           return;
         }
       }
@@ -336,7 +374,7 @@ function DriverForm({
       // Save notification preferences on the driver profile
       const cleanUsername = prefs.telegram_username
         .trim()
-        .replace(/^@+/, "")
+        .replace(/^@/, "")
         .slice(0, 64);
       await supabase
         .from("profiles")
@@ -411,11 +449,23 @@ function DriverForm({
               />
             </Field>
           </div>
-          <Field label={t.fullName}>
+          <Field label={t.fullName} error={fieldErrors.full_name}>
             <Input
               required
               value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              onChange={(e) => {
+                setForm({ ...form, full_name: e.target.value });
+                if (fieldErrors.full_name) {
+                  setFieldErrors((prev) => ({ ...prev, full_name: "" }));
+                }
+              }}
+              onBlur={(e) =>
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  full_name: validateField("full_name", e.target.value),
+                }))
+              }
+              className={fieldErrors.full_name ? "border-destructive" : ""}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -426,12 +476,24 @@ function DriverForm({
                 onChange={(e) => setForm({ ...form, passport_number: e.target.value })}
               />
             </Field>
-            <Field label={t.phone}>
+            <Field label={t.phone} error={fieldErrors.phone}>
               <Input
                 required
                 type="tel"
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, phone: e.target.value });
+                  if (fieldErrors.phone) {
+                    setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                  }
+                }}
+                onBlur={(e) =>
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    phone: validateField("phone", e.target.value),
+                  }))
+                }
+                className={fieldErrors.phone ? "border-destructive" : ""}
               />
             </Field>
           </div>
@@ -464,10 +526,23 @@ function DriverForm({
                 <Input
                   placeholder={t.telegramUsername}
                   value={prefs.telegram_username}
-                  onChange={(e) =>
-                    setPrefs((p) => ({ ...p, telegram_username: e.target.value }))
+                  onChange={(e) => {
+                    setPrefs((p) => ({ ...p, telegram_username: e.target.value }));
+                    if (fieldErrors.telegram) {
+                      setFieldErrors((prev) => ({ ...prev, telegram: "" }));
+                    }
+                  }}
+                  onBlur={(e) =>
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      telegram: validateTelegram(e.target.value),
+                    }))
                   }
+                  className={fieldErrors.telegram ? "border-destructive" : ""}
                 />
+                {fieldErrors.telegram && (
+                  <p className="text-xs text-destructive">{fieldErrors.telegram}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {t.telegramHint}
                 </p>
@@ -579,11 +654,20 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-sm">{label}</Label>
       {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
