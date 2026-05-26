@@ -405,9 +405,16 @@ function DriverForm({
     errors.full_name = validateField("full_name", form.full_name);
     errors.phone = validateField("phone", form.phone);
     errors.telegram = validateTelegram(prefs.telegram_username);
+    errors.border_crossing = form.border_crossing.trim() ? "" : t.required;
     const hasErrors = Object.values(errors).some(Boolean);
     setFieldErrors(errors);
-    if (hasErrors) return;
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstError = document.querySelector("[data-field-error]");
+        firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+      return;
+    }
 
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
@@ -508,20 +515,6 @@ function DriverForm({
           }
         }
       }
-
-      // Save notification preferences on the driver profile
-      const cleanUsername = prefs.telegram_username
-        .trim()
-        .replace(/^@/, "")
-        .slice(0, 64);
-      await supabase
-        .from("profiles")
-        .update({
-          email_notifications: prefs.email_notifications,
-          telegram_notifications: prefs.telegram_notifications,
-          telegram_username: cleanUsername || null,
-        })
-        .eq("id", user.id);
 
       toast.success(t.tripSubmitted);
       onDone();
