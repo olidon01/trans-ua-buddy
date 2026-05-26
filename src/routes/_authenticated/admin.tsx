@@ -54,7 +54,7 @@ function AdminListPage() {
   async function load() {
     const { data } = await supabase
       .from("trips")
-      .select("id,full_name,company_name,car_number,status,created_at,border_crossing")
+      .select("id,full_name,company_name,car_number,trailer_number,vin_last4,status,created_at,reviewed_at,border_crossing")
       .order("created_at", { ascending: false });
     setTrips((data as TripRow[]) ?? []);
   }
