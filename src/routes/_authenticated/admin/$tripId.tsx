@@ -165,7 +165,7 @@ function TripDetailPage() {
       } catch (e) {
         console.error("notify rejected failed", e);
       }
-      toast.success("Поїздку повернуто водієві");
+      toast.success(t.tripReturnedToDriver);
       navigate({ to: "/admin" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t.error);
