@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Plus, X, Upload, Camera, Check, Clock, AlertTriangle, Loader2,
+  Plus, X, Upload, Camera, Check, Clock, AlertTriangle, Loader2, ChevronDown,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -75,7 +75,7 @@ function DriverPage() {
   }
 
   if (activeTrip && activeTrip.status === "pending") {
-    return <WaitingScreen />;
+    return <WaitingScreen tripId={activeTrip.id} />;
   }
 
   return (
@@ -86,15 +86,138 @@ function DriverPage() {
   );
 }
 
-function WaitingScreen() {
+type FullTrip = {
+  company_name: string;
+  car_number: string;
+  trailer_number: string;
+  full_name: string;
+  passport_number: string;
+  phone: string;
+  border_crossing: string;
+  vin_last4: string[];
+  created_at: string;
+};
+
+type SubmittedPhoto = {
+  id: string;
+  category: string;
+  url: string | null;
+};
+
+function WaitingScreen({ tripId }: { tripId: string }) {
   const { t } = useLanguage();
+  const [trip, setTrip] = useState<FullTrip | null>(null);
+  const [photos, setPhotos] = useState<SubmittedPhoto[]>([]);
+  const [showData, setShowData] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase
+        .from("trips")
+        .select(
+          "company_name,car_number,trailer_number,full_name,passport_number,phone,border_crossing,vin_last4,created_at",
+        )
+        .eq("id", tripId)
+        .maybeSingle();
+      if (data) setTrip(data as FullTrip);
+      const { data: ph } = await supabase
+        .from("trip_photos")
+        .select("id,category,storage_path")
+        .eq("trip_id", tripId)
+        .order("created_at", { ascending: true });
+      const enriched = await Promise.all(
+        (ph ?? []).map(async (p) => {
+          const { data: signed } = await supabase.storage
+            .from("trip-photos")
+            .createSignedUrl(p.storage_path, 60 * 60);
+          return { id: p.id, category: p.category, url: signed?.signedUrl ?? null };
+        }),
+      );
+      setPhotos(enriched);
+    })();
+  }, [tripId]);
+
   return (
-    <div className="max-w-md mx-auto px-4 py-16 text-center">
-      <div className="mx-auto size-20 rounded-full bg-warning/15 grid place-items-center mb-6">
-        <Clock className="size-10 text-warning" />
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="text-center mb-8">
+        <div className="mx-auto size-16 rounded-full bg-warning/15 grid place-items-center mb-4">
+          <Clock className="size-8 text-warning" />
+        </div>
+        <h1 className="text-2xl font-bold mb-1">{t.waitingTitle}</h1>
+        <p className="text-muted-foreground text-sm">{t.waitingDesc}</p>
       </div>
-      <h1 className="text-2xl font-bold mb-2">{t.waitingTitle}</h1>
-      <p className="text-muted-foreground">{t.waitingDesc}</p>
+      {trip && (
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setShowData((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-card border border-border rounded-xl text-sm font-medium hover:border-primary/40 transition-colors"
+          >
+            <span>{t.viewSubmitted}</span>
+            <ChevronDown className={`size-4 text-muted-foreground transition-transform ${showData ? "rotate-180" : ""}`} />
+          </button>
+          {showData && (
+            <div className="bg-card border border-border rounded-2xl p-4 space-y-4 text-sm">
+              <h2 className="font-semibold text-muted-foreground uppercase text-xs tracking-wide">
+                {t.submittedData}
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                <ReadField label={t.companyName} value={trip.company_name} />
+                <ReadField label={t.carNumber} value={trip.car_number} />
+                <ReadField label={t.trailerNumber} value={trip.trailer_number} />
+                <ReadField label={t.passportNumber} value={trip.passport_number} />
+                <ReadField label={t.phone} value={trip.phone} />
+                <ReadField label={t.borderCrossing} value={trip.border_crossing} />
+              </div>
+              <ReadField label={t.fullName} value={trip.full_name} />
+              <div>
+                <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1.5">
+                  {t.vinList}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {trip.vin_last4.map((v, i) => (
+                    <span
+                      key={i}
+                      className="font-mono text-sm px-2 py-0.5 rounded bg-secondary"
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {photos.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground tracking-wide mb-2">
+                    {t.photos}
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {photos.map((p) =>
+                      p.url ? (
+                        <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
+                          <img
+                            src={p.url}
+                            alt=""
+                            className="aspect-square w-full object-cover rounded-lg border border-border"
+                          />
+                        </a>
+                      ) : null,
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReadField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-xs uppercase text-muted-foreground tracking-wide mb-0.5">{label}</div>
+      <div className="font-medium">{value}</div>
     </div>
   );
 }

@@ -30,6 +30,7 @@ type Trip = {
   vin_last4: string[];
   admin_comment: string | null;
   created_at: string;
+  reviewed_at: string | null;
 };
 
 type Photo = {
@@ -192,6 +193,7 @@ function TripDetailPage() {
         <StatusBadge status={trip.status} />
       </div>
 
+      <StatusTimeline trip={trip} />
       <div className="bg-card border border-border rounded-2xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
         <Info label={t.companyName} value={trip.company_name} />
         <Info label={t.carNumber} value={trip.car_number} />
@@ -276,6 +278,55 @@ function Info({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-xs uppercase text-muted-foreground tracking-wide">{label}</div>
       <div className="font-medium">{value}</div>
+    </div>
+  );
+}
+
+function StatusTimeline({ trip }: { trip: Trip }) {
+  const { t } = useLanguage();
+  const steps = [
+    {
+      label: t.submittedAt,
+      time: trip.created_at,
+      done: true,
+    },
+    {
+      label: trip.status === "approved" ? t.tripApproved : t.rejectAndSendBack,
+      time: trip.reviewed_at,
+      done: !!trip.reviewed_at,
+    },
+  ];
+  return (
+    <div className="bg-card border border-border rounded-2xl p-4 mb-6">
+      <h3 className="text-xs uppercase font-semibold text-muted-foreground tracking-wide mb-4">
+        {t.timelineTitle}
+      </h3>
+      <div className="space-y-0">
+        {steps.map((step, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div
+                className={`size-2.5 rounded-full mt-1 flex-shrink-0 ${
+                  step.done ? "bg-primary" : "bg-border"
+                }`}
+              />
+              {i < steps.length - 1 && (
+                <div className="w-px flex-1 bg-border my-1" />
+              )}
+            </div>
+            <div className="pb-4 min-w-0">
+              <div className={`text-sm font-medium ${step.done ? "text-foreground" : "text-muted-foreground"}`}>
+                {step.label}
+              </div>
+              {step.time && (
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {new Date(step.time).toLocaleString("uk-UA")}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

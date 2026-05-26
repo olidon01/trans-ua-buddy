@@ -77,6 +77,11 @@ export const translations = {
     photoCountError: "фото потрібно",
     undoReject: "Скасувати відхилення",
     rejectionCommentOptional: "Загальний коментар водієві (необов'язково)",
+    submittedAt: "Надіслано водієм",
+    reviewedAt: "Перевірено адміном",
+    timelineTitle: "Хронологія поїздки",
+    viewSubmitted: "Переглянути надіслані дані",
+    submittedData: "Надіслані дані",
     borders: [
       "Дорогуськ — Ягодин",
       "Гребенне — Рава-Руська",
@@ -165,6 +170,11 @@ export const translations = {
     photoCountError: "zdjęć wymaganych",
     undoReject: "Cofnij odrzucenie",
     rejectionCommentOptional: "Ogólny komentarz do kierowcy (opcjonalnie)",
+    submittedAt: "Wysłano przez kierowcę",
+    reviewedAt: "Sprawdzono przez administratora",
+    timelineTitle: "Oś czasu transportu",
+    viewSubmitted: "Przeglądaj wysłane dane",
+    submittedData: "Wysłane dane",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
