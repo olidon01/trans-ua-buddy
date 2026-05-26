@@ -453,6 +453,16 @@ function DriverForm({
             ...parsed.data,
             status: "pending",
             admin_comment: null,
+            previous_data: {
+              company_name: form.company_name,
+              car_number: form.car_number,
+              trailer_number: form.trailer_number,
+              full_name: form.full_name,
+              passport_number: form.passport_number,
+              phone: form.phone,
+              border_crossing: form.border_crossing,
+              vin_last4: form.vin_last4,
+            },
           })
           .eq("id", existingTrip.id);
         if (error) throw error;
