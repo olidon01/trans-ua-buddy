@@ -128,11 +128,11 @@ function TripDetailPage() {
   async function sendBack() {
     const rejectedIds = photos.filter((p) => p.status === "rejected").map((p) => p.id);
     if (!rejectedIds.length) {
-      toast.error("Позначте відхилені фото або затвердіть поїздку");
+      toast.error(t.markRejectedFirst);
       return;
     }
     if (!adminComment.trim()) {
-      toast.error("Додайте коментар водієві");
+      toast.error(t.addPhotoComment);
       return;
     }
     setBusy(true);
