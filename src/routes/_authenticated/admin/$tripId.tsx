@@ -31,7 +31,7 @@ type Trip = {
   admin_comment: string | null;
   created_at: string;
   reviewed_at: string | null;
-  previous_data: Record<string, unknown> | null;
+  previous_data: Record<string, string | string[]> | null;
 };
 
 type Photo = {
