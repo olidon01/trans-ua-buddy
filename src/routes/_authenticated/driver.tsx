@@ -832,7 +832,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" data-field-error={error ? "true" : undefined}>
       <Label className="text-sm">{label}</Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
