@@ -116,7 +116,7 @@ function TripDetailPage() {
       } catch (e) {
         console.error("notify approved failed", e);
       }
-      toast.success("Поїздку затверджено");
+      toast.success(t.tripApproved);
       navigate({ to: "/admin" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t.error);
