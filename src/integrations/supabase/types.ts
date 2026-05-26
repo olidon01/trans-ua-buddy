@@ -59,6 +59,7 @@ export type Database = {
           status: Database["public"]["Enums"]["photo_status"]
           storage_path: string
           trip_id: string
+          vin_index: number
         }
         Insert: {
           category: string
@@ -68,6 +69,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["photo_status"]
           storage_path: string
           trip_id: string
+          vin_index?: number
         }
         Update: {
           category?: string
@@ -77,6 +79,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["photo_status"]
           storage_path?: string
           trip_id?: string
+          vin_index?: number
         }
         Relationships: [
           {
