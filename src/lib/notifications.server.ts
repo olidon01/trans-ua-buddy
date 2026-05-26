@@ -2,6 +2,10 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+function appUrl(): string {
+  return (process.env.APP_URL ?? "").replace(/\/$/, "");
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   van_overview: "Огляд фургона",
   van_corners: "Кути фургона",
@@ -102,7 +106,15 @@ export function renderRejectedEmail(opts: {
       </blockquote>
       <p>Відхилені фото:</p>
       <ul>${items}</ul>
-      <p>Будь ласка, відкрийте застосунок і завантажте нові фото для зазначених позицій.</p>
+      <p>Будь ласка, завантажте нові фото для зазначених позицій.</p>
+      ${appUrl() ? `
+      <p style="margin-top:24px">
+        <a href="${appUrl()}/driver"
+           style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Завантажити нові фото →
+        </a>
+      </p>` : ""}
       <p style="color:#666;font-size:12px;margin-top:32px">VanLink</p>
     </div>`;
 }
@@ -124,11 +136,13 @@ export function renderRejectedTelegram(opts: {
         }`,
     )
     .join("\n");
+  const link = appUrl();
   return (
     `⚠️ <b>Потрібно перезавантажити фото</b>\n\n` +
-    `${escapeHtml(opts.fullName)}, адміністратор повернув поїздку:\n` +
-    `<i>${escapeHtml(opts.adminComment)}</i>\n\n` +
-    `Відхилені фото:\n${items}`
+    `${escapeHtml(opts.fullName)}, адміністратор повернув поїздку на доопрацювання.\n\n` +
+    `Відхилені фото:\n${items}` +
+    (opts.adminComment ? `\n\n💬 <i>${escapeHtml(opts.adminComment)}</i>` : "") +
+    (link ? `\n\n👉 <a href="${link}/driver">Перейти до застосунку</a>` : "")
   );
 }
 
