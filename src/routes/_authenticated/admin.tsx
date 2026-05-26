@@ -26,6 +26,8 @@ function AdminListPage() {
   const { roles, loading } = useAuth();
   const { t } = useLanguage();
   const [trips, setTrips] = useState<TripRow[] | null>(null);
+  const [query, setQuery] = useState("");
+  const [showStats, setShowStats] = useState(false);
   const routerState = useRouterState();
   const isAdminIndex = routerState.location.pathname === "/admin";
 
