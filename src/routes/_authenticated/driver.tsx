@@ -269,18 +269,12 @@ function DriverForm({
     telegram_notifications: true,
     telegram_username: "",
   });
-  const [photos, setPhotos] = useState<Record<PhotoCategoryKey, File[]>>({
-    van_overview: [],
-    van_corners: [],
-    vin_plate: [],
-    vin_windshield: [],
-    interior: [],
-    cargo: [],
-    documents: [],
+  const [photos, setPhotos] = useState<Record<number, Record<PhotoCategoryKey, File[]>>>({
+    0: emptyCarPhotos(),
   });
   // For resubmit: existing rejected photos info
   const [rejected, setRejected] = useState<
-    { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null }[]
+    { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null; vin_index: number }[]
   >([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -372,7 +366,7 @@ function DriverForm({
       }
       const { data: rj } = await supabase
         .from("trip_photos")
-        .select("id,category,storage_path,comment")
+        .select("id,category,storage_path,comment,vin_index")
         .eq("trip_id", existingTrip.id)
         .eq("status", "rejected");
       const enriched = await Promise.all(
@@ -384,6 +378,11 @@ function DriverForm({
         }),
       );
       setRejected(enriched);
+      const photoInit: Record<number, Record<PhotoCategoryKey, File[]>> = {};
+      for (const r of enriched) {
+        if (!photoInit[r.vin_index]) photoInit[r.vin_index] = emptyCarPhotos();
+      }
+      setPhotos(photoInit);
     })();
   }, [existingTrip]);
 
@@ -396,16 +395,35 @@ function DriverForm({
   }
 
   function addVin() {
-    setForm((f) => ({ ...f, vin_last4: [...f.vin_last4, ""] }));
+    setForm((f) => {
+      const next = [...f.vin_last4, ""];
+      setPhotos((p) => ({ ...p, [next.length - 1]: emptyCarPhotos() }));
+      return { ...f, vin_last4: next };
+    });
   }
   function removeVin(i: number) {
-    setForm((f) => ({ ...f, vin_last4: f.vin_last4.filter((_, idx) => idx !== i) }));
+    setForm((f) => {
+      const next = f.vin_last4.filter((_, idx) => idx !== i);
+      setPhotos((p) => {
+        const result: Record<number, Record<PhotoCategoryKey, File[]>> = {};
+        let newIdx = 0;
+        for (let j = 0; j < f.vin_last4.length; j++) {
+          if (j === i) continue;
+          result[newIdx++] = p[j] ?? emptyCarPhotos();
+        }
+        return result;
+      });
+      return { ...f, vin_last4: next };
+    });
   }
 
-  function handlePhotos(cat: PhotoCategoryKey, files: FileList | null, max: number) {
+  function handlePhotos(vinIndex: number, cat: PhotoCategoryKey, files: FileList | null, max: number) {
     if (!files) return;
     const arr = Array.from(files).slice(0, max);
-    setPhotos((p) => ({ ...p, [cat]: arr }));
+    setPhotos((p) => ({
+      ...p,
+      [vinIndex]: { ...(p[vinIndex] ?? emptyCarPhotos()), [cat]: arr },
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -435,19 +453,24 @@ function DriverForm({
 
     // For NEW trip, require all category counts; for resubmit only require categories with rejected photos
     if (!existingTrip) {
-      for (const c of PHOTO_CATEGORIES) {
-        if (photos[c.key].length !== c.count) {
-          toast.error(`${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
-          return;
+      for (let vi = 0; vi < form.vin_last4.length; vi++) {
+        for (const c of PHOTO_CATEGORIES) {
+          if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
+            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            return;
+          }
         }
       }
     } else {
-      const requiredCats = new Set(rejected.map((r) => r.category));
-      for (const c of PHOTO_CATEGORIES) {
-        if (!requiredCats.has(c.key)) continue;
-        const needed = rejected.filter((r) => r.category === c.key).length;
-        if (photos[c.key].length !== needed) {
-          toast.error(`${getCategoryLabel(t, c.key)}: ${needed} ${t.photoCountError}`);
+      const checked = new Set<string>();
+      for (const r of rejected) {
+        const key = `${r.vin_index}::${r.category}`;
+        if (checked.has(key)) continue;
+        checked.add(key);
+        const needed = rejected.filter(x => x.vin_index === r.vin_index && x.category === r.category).length;
+        const have = photos[r.vin_index]?.[r.category as PhotoCategoryKey]?.length ?? 0;
+        if (have !== needed) {
+          toast.error(`Авто ${r.vin_index + 1}: ${getCategoryLabel(t, r.category as PhotoCategoryKey)}: ${needed} ${t.photoCountError}`);
           return;
         }
       }
@@ -470,30 +493,31 @@ function DriverForm({
         if (error) throw error;
 
         // Replace each rejected photo IN-PLACE: upload new file, UPDATE row, delete old storage object.
-        for (const c of PHOTO_CATEGORIES) {
-          const rejInCat = rejected.filter((r) => r.category === c.key);
-          if (rejInCat.length === 0) continue;
-          const files = photos[c.key];
-          for (let i = 0; i < rejInCat.length; i++) {
-            const target = rejInCat[i];
+        const rejByKey: Record<string, typeof rejected> = {};
+        for (const r of rejected) {
+          const k = `${r.vin_index}::${r.category}`;
+          (rejByKey[k] ||= []).push(r);
+        }
+        for (const [key, items] of Object.entries(rejByKey)) {
+          const splitIdx = key.indexOf("::");
+          const vi = parseInt(key.slice(0, splitIdx));
+          const cat = key.slice(splitIdx + 2) as PhotoCategoryKey;
+          const files = photos[vi]?.[cat] ?? [];
+          for (let i = 0; i < items.length; i++) {
+            const target = items[i];
             const file = files[i];
             if (!file) continue;
             const ext = file.name.split(".").pop() || "jpg";
-            const newPath = `${user.id}/${existingTrip.id}/${c.key}/${crypto.randomUUID()}.${ext}`;
+            const newPath = `${user.id}/${existingTrip.id}/${cat}/${vi}/${crypto.randomUUID()}.${ext}`;
             const { error: upErr } = await supabase.storage
               .from("trip-photos")
               .upload(newPath, file, { contentType: file.type, upsert: false });
             if (upErr) throw upErr;
             const { error: updErr } = await supabase
               .from("trip_photos")
-              .update({
-                storage_path: newPath,
-                status: "pending",
-                comment: null,
-              })
+              .update({ storage_path: newPath, status: "pending", comment: null })
               .eq("id", target.id);
             if (updErr) throw updErr;
-            // best-effort delete of old file
             await supabase.storage.from("trip-photos").remove([target.storage_path]);
           }
         }
@@ -506,24 +530,27 @@ function DriverForm({
         if (error) throw error;
         tripId = data.id;
 
-        // Upload all photos for new trip
-        for (const c of PHOTO_CATEGORIES) {
-          const files = photos[c.key];
-          if (!files.length) continue;
-          for (const file of files) {
-            const ext = file.name.split(".").pop() || "jpg";
-            const path = `${user.id}/${tripId}/${c.key}/${crypto.randomUUID()}.${ext}`;
-            const { error: upErr } = await supabase.storage
-              .from("trip-photos")
-              .upload(path, file, { contentType: file.type, upsert: false });
-            if (upErr) throw upErr;
-            const { error: insErr } = await supabase.from("trip_photos").insert({
-              trip_id: tripId!,
-              category: c.key,
-              storage_path: path,
-              status: "pending",
-            });
-            if (insErr) throw insErr;
+        // Upload all photos for new trip, per car
+        for (let vi = 0; vi < form.vin_last4.length; vi++) {
+          for (const c of PHOTO_CATEGORIES) {
+            const files = photos[vi]?.[c.key] ?? [];
+            if (!files.length) continue;
+            for (const file of files) {
+              const ext = file.name.split(".").pop() || "jpg";
+              const path = `${user.id}/${tripId}/${c.key}/${vi}/${crypto.randomUUID()}.${ext}`;
+              const { error: upErr } = await supabase.storage
+                .from("trip-photos")
+                .upload(path, file, { contentType: file.type, upsert: false });
+              if (upErr) throw upErr;
+              const { error: insErr } = await supabase.from("trip_photos").insert({
+                trip_id: tripId!,
+                category: c.key,
+                storage_path: path,
+                status: "pending",
+                vin_index: vi,
+              });
+              if (insErr) throw insErr;
+            }
           }
         }
       }
@@ -562,14 +589,6 @@ function DriverForm({
   }
 
   const isResubmit = !!existingTrip;
-  const rejectedCountByCat = rejected.reduce<Record<string, number>>((acc, r) => {
-    acc[r.category] = (acc[r.category] ?? 0) + 1;
-    return acc;
-  }, {});
-  const rejectedByCatList = rejected.reduce<Record<string, typeof rejected>>((acc, r) => {
-    (acc[r.category] ||= []).push(r);
-    return acc;
-  }, {});
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
@@ -781,27 +800,57 @@ function DriverForm({
         </Section>
 
         <Section title={t.photos}>
-          <div className="space-y-4">
-            {PHOTO_CATEGORIES.map((c) => {
-              const rejectedInCat = rejectedByCatList[c.key] ?? [];
-              const needed = !isResubmit || rejectedInCat.length > 0;
-              const requiredCount = isResubmit ? rejectedInCat.length : c.count;
-              if (isResubmit && rejectedInCat.length === 0) return null;
+          <div className="space-y-6">
+            {form.vin_last4.map((vin, vi) => {
+              const readyCount = PHOTO_CATEGORIES.filter(
+                (c) => (photos[vi]?.[c.key]?.length ?? 0) === c.count
+              ).length;
               return (
-                <PhotoSlot
-                  key={c.key}
-                  category={c.key}
-                  label={getCategoryLabel(t, c.key)}
-                  count={requiredCount}
-                  files={photos[c.key]}
-                  required={needed}
-                  rejectedItems={rejectedInCat.map((r) => ({
-                    id: r.id,
-                    signed_url: r.signed_url,
-                    comment: r.comment,
-                  }))}
-                  onChange={(files) => handlePhotos(c.key, files, c.count)}
-                />
+                <div key={vi} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">
+                      Авто {vi + 1}{vin.length === 4 ? ` — ...${vin}` : ""}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {readyCount}/{PHOTO_CATEGORIES.length} категорій
+                    </span>
+                  </div>
+                  {isResubmit ? (
+                    PHOTO_CATEGORIES.map((c) => {
+                      const rejInCat = rejected.filter(
+                        (r) => r.vin_index === vi && r.category === c.key
+                      );
+                      if (!rejInCat.length) return null;
+                      return (
+                        <PhotoSlot
+                          key={c.key}
+                          category={c.key}
+                          label={getCategoryLabel(t, c.key)}
+                          count={rejInCat.length}
+                          files={photos[vi]?.[c.key] ?? []}
+                          required={true}
+                          rejectedItems={rejInCat.map((r) => ({
+                            id: r.id, signed_url: r.signed_url, comment: r.comment,
+                          }))}
+                          onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
+                        />
+                      );
+                    })
+                  ) : (
+                    PHOTO_CATEGORIES.map((c) => (
+                      <PhotoSlot
+                        key={c.key}
+                        category={c.key}
+                        label={getCategoryLabel(t, c.key)}
+                        count={c.count}
+                        files={photos[vi]?.[c.key] ?? []}
+                        required={true}
+                        rejectedItems={[]}
+                        onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
+                      />
+                    ))
+                  )}
+                </div>
               );
             })}
           </div>
