@@ -202,7 +202,6 @@ function TripDetailPage() {
       return;
     }
     setTrip({ ...trip, ...editDraft, admin_comment: newComment } as Trip);
-    setAdminComment(newComment);
     setIsEditing(false);
     toast.success("OK");
   }
