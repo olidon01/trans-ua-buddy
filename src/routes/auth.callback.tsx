@@ -26,6 +26,14 @@ function AuthCallback() {
       return;
     }
 
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const recoveryDetected =
+      hashParams.get("type") === "recovery" ||
+      url.searchParams.get("type") === "recovery";
+    if (recoveryDetected) {
+      setIsRecovery(true);
+    }
+
     if (code) {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (error) setError(error.message);
