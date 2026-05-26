@@ -234,7 +234,7 @@ function DriverForm({
 
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
-      toast.error("Заповніть усі поля коректно");
+      toast.error(t.formInvalid);
       return;
     }
 
