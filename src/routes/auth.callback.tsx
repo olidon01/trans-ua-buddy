@@ -13,6 +13,7 @@ function AuthCallback() {
   const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [exchanging, setExchanging] = useState(true);
+  const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
     const url = new URL(window.location.href);
