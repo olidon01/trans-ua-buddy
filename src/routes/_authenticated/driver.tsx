@@ -387,7 +387,7 @@ function DriverForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Section title="Дані рейсу">
+        <Section title={t.tripDataSection}>
           <Field label={t.companyName}>
             <Input
               required
