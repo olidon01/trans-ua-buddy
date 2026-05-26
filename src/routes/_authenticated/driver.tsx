@@ -244,6 +244,18 @@ const tripSchema = z.object({
 
 type FormState = z.infer<typeof tripSchema>;
 
+function emptyCarPhotos(): Record<PhotoCategoryKey, File[]> {
+  return {
+    van_overview: [],
+    van_corners: [],
+    vin_plate: [],
+    vin_windshield: [],
+    interior: [],
+    cargo: [],
+    documents: [],
+  };
+}
+
 function DriverForm({
   existingTrip,
   onDone,
