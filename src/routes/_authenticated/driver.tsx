@@ -304,6 +304,22 @@ function DriverForm({
     return "";
   }
 
+  async function savePrefsToDb(updated: typeof prefs) {
+    if (!user) return;
+    const cleanUsername = updated.telegram_username
+      .trim()
+      .replace(/^@/, "")
+      .slice(0, 64);
+    await supabase
+      .from("profiles")
+      .update({
+        email_notifications: updated.email_notifications,
+        telegram_notifications: updated.telegram_notifications,
+        telegram_username: cleanUsername || null,
+      })
+      .eq("id", user.id);
+  }
+
   // Load profile prefs once
   useEffect(() => {
     if (!user) return;
@@ -389,9 +405,16 @@ function DriverForm({
     errors.full_name = validateField("full_name", form.full_name);
     errors.phone = validateField("phone", form.phone);
     errors.telegram = validateTelegram(prefs.telegram_username);
+    errors.border_crossing = form.border_crossing.trim() ? "" : t.required;
     const hasErrors = Object.values(errors).some(Boolean);
     setFieldErrors(errors);
-    if (hasErrors) return;
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstError = document.querySelector("[data-field-error]");
+        firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+      return;
+    }
 
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
@@ -492,20 +515,6 @@ function DriverForm({
           }
         }
       }
-
-      // Save notification preferences on the driver profile
-      const cleanUsername = prefs.telegram_username
-        .trim()
-        .replace(/^@/, "")
-        .slice(0, 64);
-      await supabase
-        .from("profiles")
-        .update({
-          email_notifications: prefs.email_notifications,
-          telegram_notifications: prefs.telegram_notifications,
-          telegram_username: cleanUsername || null,
-        })
-        .eq("id", user.id);
 
       toast.success(t.tripSubmitted);
       onDone();
@@ -649,9 +658,11 @@ function DriverForm({
               </Label>
               <Switch
                 checked={prefs.email_notifications}
-                onCheckedChange={(v) =>
-                  setPrefs((p) => ({ ...p, email_notifications: v }))
-                }
+                onCheckedChange={(v) => {
+                  const updated = { ...prefs, email_notifications: v };
+                  setPrefs(updated);
+                  void savePrefsToDb(updated);
+                }}
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -660,9 +671,11 @@ function DriverForm({
               </Label>
               <Switch
                 checked={prefs.telegram_notifications}
-                onCheckedChange={(v) =>
-                  setPrefs((p) => ({ ...p, telegram_notifications: v }))
-                }
+                onCheckedChange={(v) => {
+                  const updated = { ...prefs, telegram_notifications: v };
+                  setPrefs(updated);
+                  void savePrefsToDb(updated);
+                }}
               />
             </div>
             {prefs.telegram_notifications && (
@@ -677,12 +690,15 @@ function DriverForm({
                       setFieldErrors((prev) => ({ ...prev, telegram: "" }));
                     }
                   }}
-                  onBlur={(e) =>
+                  onBlur={(e) => {
+                    const val = e.target.value;
                     setFieldErrors((prev) => ({
                       ...prev,
-                      telegram: validateTelegram(e.target.value),
-                    }))
-                  }
+                      telegram: validateTelegram(val),
+                    }));
+                    const updated = { ...prefs, telegram_username: val };
+                    void savePrefsToDb(updated);
+                  }}
                   className={fieldErrors.telegram ? "border-destructive" : ""}
                 />
                 {fieldErrors.telegram && (
@@ -694,12 +710,19 @@ function DriverForm({
               </div>
             )}
           </div>
-          <Field label={t.borderCrossing}>
+          <Field label={t.borderCrossing} error={fieldErrors.border_crossing}>
             <Select
               value={form.border_crossing}
-              onValueChange={(v) => setForm({ ...form, border_crossing: v })}
+              onValueChange={(v) => {
+                setForm({ ...form, border_crossing: v });
+                if (fieldErrors.border_crossing) {
+                  setFieldErrors((prev) => ({ ...prev, border_crossing: "" }));
+                }
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={fieldErrors.border_crossing ? "border-destructive" : ""}
+              >
                 <SelectValue placeholder={t.selectBorder} />
               </SelectTrigger>
               <SelectContent>
@@ -809,7 +832,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" data-field-error={error ? "true" : undefined}>
       <Label className="text-sm">{label}</Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}

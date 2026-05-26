@@ -82,6 +82,9 @@ export const translations = {
     timelineTitle: "Хронологія поїздки",
     viewSubmitted: "Переглянути надіслані дані",
     submittedData: "Надіслані дані",
+    timelinePending: "Очікує перевірки",
+    timelineReturned: "Повернуто на доопрацювання",
+    timelineApproved: "Затверджено ✓",
     borders: [
       "Дорогуськ — Ягодин",
       "Гребенне — Рава-Руська",
@@ -175,6 +178,9 @@ export const translations = {
     timelineTitle: "Oś czasu transportu",
     viewSubmitted: "Przeglądaj wysłane dane",
     submittedData: "Wysłane dane",
+    timelinePending: "Oczekuje weryfikacji",
+    timelineReturned: "Zwrócono do poprawki",
+    timelineApproved: "Zatwierdzone ✓",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
