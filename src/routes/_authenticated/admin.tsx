@@ -26,8 +26,13 @@ function AdminListPage() {
   const routerState = useRouterState();
   const isAdminIndex = routerState.location.pathname === "/admin";
 
+  // Reload data whenever navigating back to the admin index
   useEffect(() => {
-    void load();
+    if (isAdminIndex) void load();
+  }, [isAdminIndex]);
+
+  // Realtime subscription — set up once on mount
+  useEffect(() => {
     const ch = supabase
       .channel("admin-trips")
       .on(
