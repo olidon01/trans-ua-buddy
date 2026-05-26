@@ -14,8 +14,11 @@ type TripRow = {
   full_name: string;
   company_name: string;
   car_number: string;
+  trailer_number: string;
+  vin_last4: string[];
   status: "pending" | "approved" | "resubmit";
   created_at: string;
+  reviewed_at: string | null;
   border_crossing: string;
 };
 
