@@ -71,6 +71,10 @@ export const translations = {
     telegramUsername: "Ваш Telegram username (@username)",
     telegramHint: "Щоб отримувати повідомлення, відкрийте бота й натисніть /start.",
     selectBorder: "Оберіть пункт",
+    validFullName: "Тільки латинські літери, як у паспорті (напр. Ivan Petrenko)",
+    validPhone: "Починається з + та коду країни (напр. +48600123456)",
+    validTelegram: "Username має починатися з @ (напр. @username)",
+    photoCountError: "фото потрібно",
     borders: [
       "Дорогуськ — Ягодин",
       "Гребенне — Рава-Руська",
@@ -153,6 +157,10 @@ export const translations = {
     telegramUsername: "Twój Telegram username (@username)",
     telegramHint: "Aby otrzymywać powiadomienia, otwórz bota i naciśnij /start.",
     selectBorder: "Wybierz przejście",
+    validFullName: "Tylko litery łacińskie, jak w paszporcie (np. Ivan Petrenko)",
+    validPhone: "Zaczyna się od + i kodu kraju (np. +48600123456)",
+    validTelegram: "Username musi zaczynać się od @ (np. @username)",
+    photoCountError: "zdjęć wymaganych",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
