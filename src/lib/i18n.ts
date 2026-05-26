@@ -134,6 +134,13 @@ export const translations = {
     loading: "Ładowanie…",
     error: "Błąd",
     required: "Pole wymagane",
+    formInvalid: "Sprawdź pola — są błędy",
+    tripSubmitted: "Transport wysłany do weryfikacji",
+    submitError: "Błąd wysyłania. Spróbuj ponownie",
+    tripApproved: "Transport zatwierdzony",
+    markRejectedFirst: "Oznacz odrzucone zdjęcia lub kliknij «Zatwierdź»",
+    addPhotoComment: "Dodaj komentarz pod odrzuconym zdjęciem",
+    tripReturnedToDriver: "Transport zwrócony do kierowcy",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
