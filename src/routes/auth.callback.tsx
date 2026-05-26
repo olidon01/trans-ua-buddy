@@ -65,6 +65,7 @@ function AuthCallback() {
   }
 
   if (!session) return <Navigate to="/login" />;
+  if (isRecovery && session) return <Navigate to="/set-password" />;
   if (isStaff(roles)) return <Navigate to="/admin" />;
   return <Navigate to="/driver" />;
 }
