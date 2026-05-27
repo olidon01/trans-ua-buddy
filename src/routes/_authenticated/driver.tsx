@@ -425,12 +425,10 @@ function DriverForm({
     });
   }
 
-  function handlePhotos(vinIndex: number, cat: PhotoCategoryKey, files: FileList | null, max: number) {
-    if (!files) return;
-    const arr = Array.from(files).slice(0, max);
+  function handlePhotos(vinIndex: number, cat: PhotoCategoryKey, files: File[]) {
     setPhotos((p) => ({
       ...p,
-      [vinIndex]: { ...(p[vinIndex] ?? emptyCarPhotos()), [cat]: arr },
+      [vinIndex]: { ...(p[vinIndex] ?? emptyCarPhotos()), [cat]: files },
     }));
   }
 
@@ -860,8 +858,9 @@ function DriverForm({
                     count={isNewVin ? c.count : rejInCat.length}
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
+                    subSlots={isNewVin ? c.subSlots : undefined}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
-                    onChange={(files) => handlePhotos(activeCarIndex, c.key, files, isNewVin ? c.count : rejInCat.length)} />
+                    onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
                 );
               })
             ) : (
@@ -870,7 +869,8 @@ function DriverForm({
                   label={getCategoryLabel(t, c.key)} count={c.count}
                   files={photos[activeCarIndex]?.[c.key] ?? []}
                   required={true} rejectedItems={[]}
-                  onChange={(files) => handlePhotos(activeCarIndex, c.key, files, c.count)} />
+                  subSlots={c.subSlots}
+                  onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
               ))
             )}
           </div>
