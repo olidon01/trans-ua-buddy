@@ -36,7 +36,7 @@ function SetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      toast.error("Пароль не підходить. Спробуйте інший (мін. 8 символів).");
     } else {
       toast.success("Пароль встановлено");
       void navigate({ to: "/" });
