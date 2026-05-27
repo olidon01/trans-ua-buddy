@@ -290,6 +290,7 @@ function DriverForm({
   >([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [activeCarIndex, setActiveCarIndex] = useState(0);
 
   function validateField(name: string, value: string): string {
     if (name === "full_name") {
