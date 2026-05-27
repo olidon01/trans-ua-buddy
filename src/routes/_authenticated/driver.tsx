@@ -964,7 +964,7 @@ function PhotoSlot({
         </div>
       )}
       <input
-        id={id}
+        id={`${id}-camera`}
         type="file"
         accept="image/*"
         capture="environment"
@@ -972,15 +972,22 @@ function PhotoSlot({
         className="hidden"
         onChange={(e) => onChange(e.target.files)}
       />
-      <Label
-        htmlFor={id}
-        className="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 rounded-lg bg-secondary hover:bg-secondary/80 text-sm"
-      >
-        <Camera className="size-4" />
-        {files.length > 0
-          ? `Обрано: ${files.length} / ${count}`
-          : `${t.uploadPhotos} (${count})`}
-      </Label>
+      <input
+        id={`${id}-gallery`}
+        type="file"
+        accept="image/*"
+        multiple={count > 1}
+        className="hidden"
+        onChange={(e) => onChange(e.target.files)}
+      />
+      <div className="flex gap-2">
+        <label htmlFor={`${id}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
+          <Camera className="size-4" /> Камера
+        </label>
+        <label htmlFor={`${id}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
+          <Upload className="size-4" /> Галерея
+        </label>
+      </div>
       {files.length > 0 && (
         <div className="mt-2 grid grid-cols-4 gap-1.5">
           {files.map((f, i) => (
