@@ -176,6 +176,7 @@ function TripDetailPage() {
 
   const photosByCat = (cat: PhotoCategoryKey) => photos.filter((p) => p.category === cat);
   const editable = trip.status !== "approved";
+  const isResubmitTrip = trip.previous_data !== null && trip.status === "pending";
 
   const prev = trip.previous_data;
   const showDiff = trip.status === "pending" && prev !== null;
@@ -269,7 +270,18 @@ function TripDetailPage() {
             <EditField label={t.trailerNumber} value={editDraft.trailer_number ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, trailer_number: v }))} />
             <EditField label={t.passportNumber} value={editDraft.passport_number ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, passport_number: v }))} />
             <EditField label={t.phone} value={editDraft.phone ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, phone: v }))} />
-            <EditField label={t.borderCrossing} value={editDraft.border_crossing ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, border_crossing: v }))} />
+            <div>
+              <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1">{t.borderCrossing}</div>
+              <select
+                className="border border-border rounded px-2 py-1 text-sm w-full bg-background"
+                value={editDraft.border_crossing ?? ""}
+                onChange={(e) => setEditDraft((d) => ({ ...d, border_crossing: e.target.value }))}
+              >
+                {t.borders.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
           </>
         )}
         <div
@@ -308,6 +320,7 @@ function TripDetailPage() {
                     onComment={(v) => setComments((m) => ({ ...m, [p.id]: v }))}
                     onReject={() => setPhotoStatus(p.id, p.status === "rejected" ? "approved" : "rejected")}
                     editable={editable}
+                    isResubmitted={isResubmitTrip}
                   />
                 ))}
               </div>
@@ -428,18 +441,24 @@ function PhotoCard({
   onComment,
   onReject,
   editable,
+  isResubmitted,
 }: {
   photo: Photo;
   comment: string;
   onComment: (v: string) => void;
   onReject: () => void;
   editable: boolean;
+  isResubmitted: boolean;
 }) {
   const { t } = useLanguage();
   return (
     <div
       className={`bg-card border rounded-xl overflow-hidden ${
-        photo.status === "rejected" ? "border-destructive" : "border-border"
+        photo.status === "rejected"
+          ? "border-destructive"
+          : isResubmitted && photo.status === "pending"
+          ? "border-orange-400"
+          : "border-border"
       }`}
     >
       {photo.url && (
