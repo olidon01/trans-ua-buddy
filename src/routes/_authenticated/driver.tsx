@@ -482,6 +482,16 @@ function DriverForm({
           return;
         }
       }
+      // Validate new VINs have all photos
+      const originalVinCount = originalData?.vin_last4?.length ?? 0;
+      for (let vi = originalVinCount; vi < form.vin_last4.length; vi++) {
+        for (const c of PHOTO_CATEGORIES) {
+          if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
+            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            return;
+          }
+        }
+      }
     }
 
     setSubmitting(true);
@@ -527,6 +537,30 @@ function DriverForm({
               .eq("id", target.id);
             if (updErr) throw updErr;
             await supabase.storage.from("trip-photos").remove([target.storage_path]);
+          }
+        }
+        // Upload photos for new VINs added during resubmit
+        const originalVinCount = originalData?.vin_last4?.length ?? 0;
+        for (let vi = originalVinCount; vi < form.vin_last4.length; vi++) {
+          for (const c of PHOTO_CATEGORIES) {
+            const files = photos[vi]?.[c.key] ?? [];
+            if (!files.length) continue;
+            for (const file of files) {
+              const ext = file.name.split(".").pop() || "jpg";
+              const path = `${user.id}/${existingTrip.id}/${c.key}/${vi}/${crypto.randomUUID()}.${ext}`;
+              const { error: upErr } = await supabase.storage
+                .from("trip-photos")
+                .upload(path, file, { contentType: file.type, upsert: false });
+              if (upErr) throw upErr;
+              const { error: insErr } = await supabase.from("trip_photos").insert({
+                trip_id: existingTrip.id,
+                category: c.key,
+                storage_path: path,
+                status: "pending",
+                vin_index: vi,
+              });
+              if (insErr) throw insErr;
+            }
           }
         }
       } else {
