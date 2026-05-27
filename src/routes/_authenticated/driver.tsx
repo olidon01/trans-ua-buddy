@@ -824,23 +824,25 @@ function DriverForm({
                   </div>
                   {isResubmit ? (
                     PHOTO_CATEGORIES.map((c) => {
+                      const originalVinCount = originalData?.vin_last4?.length ?? 0;
+                      const isNewVin = vi >= originalVinCount;
                       const rejInCat = rejected.filter(
                         (r) => r.vin_index === vi && r.category === c.key
                       );
-                      if (!rejInCat.length) return null;
+                      if (!isNewVin && !rejInCat.length) return null;
                       return (
                         <PhotoSlot
                           key={c.key}
+                          vinIndex={vi}
                           category={c.key}
                           label={getCategoryLabel(t, c.key)}
-                          count={rejInCat.length}
+                          count={isNewVin ? c.count : rejInCat.length}
                           files={photos[vi]?.[c.key] ?? []}
                           required={true}
-                          rejectedItems={rejInCat.map((r) => ({
+                          rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({
                             id: r.id, signed_url: r.signed_url, comment: r.comment,
                           }))}
-                          onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
-                          vinIndex={vi}
+                          onChange={(files) => handlePhotos(vi, c.key, files, isNewVin ? c.count : rejInCat.length)}
                         />
                       );
                     })
