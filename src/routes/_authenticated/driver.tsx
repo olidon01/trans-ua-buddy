@@ -425,12 +425,10 @@ function DriverForm({
     });
   }
 
-  function handlePhotos(vinIndex: number, cat: PhotoCategoryKey, files: FileList | null, max: number) {
-    if (!files) return;
-    const arr = Array.from(files).slice(0, max);
+  function handlePhotos(vinIndex: number, cat: PhotoCategoryKey, files: File[]) {
     setPhotos((p) => ({
       ...p,
-      [vinIndex]: { ...(p[vinIndex] ?? emptyCarPhotos()), [cat]: arr },
+      [vinIndex]: { ...(p[vinIndex] ?? emptyCarPhotos()), [cat]: files },
     }));
   }
 
@@ -860,8 +858,9 @@ function DriverForm({
                     count={isNewVin ? c.count : rejInCat.length}
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
+                    subSlots={isNewVin ? c.subSlots : undefined}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
-                    onChange={(files) => handlePhotos(activeCarIndex, c.key, files, isNewVin ? c.count : rejInCat.length)} />
+                    onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
                 );
               })
             ) : (
@@ -870,7 +869,8 @@ function DriverForm({
                   label={getCategoryLabel(t, c.key)} count={c.count}
                   files={photos[activeCarIndex]?.[c.key] ?? []}
                   required={true} rejectedItems={[]}
-                  onChange={(files) => handlePhotos(activeCarIndex, c.key, files, c.count)} />
+                  subSlots={c.subSlots}
+                  onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
               ))
             )}
           </div>
@@ -930,6 +930,7 @@ function PhotoSlot({
   rejectedItems,
   vinIndex,
   category,
+  subSlots,
 }: {
   category: string;
   label: string;
@@ -937,8 +938,9 @@ function PhotoSlot({
   files: File[];
   required: boolean;
   rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
-  onChange: (files: FileList | null) => void;
+  onChange: (files: File[]) => void;
   vinIndex: number;
+  subSlots?: readonly string[];
 }) {
   const { t } = useLanguage();
   const id = `photo-${vinIndex}-${category}`;
@@ -972,6 +974,50 @@ function PhotoSlot({
           ))}
         </div>
       )}
+      {subSlots ? (
+        <div className="space-y-2">
+          {subSlots.map((slotName, i) => {
+            const subId = `${id}-sub-${i}`;
+            const hasFile = !!files[i];
+            return (
+              <div key={i} className={`rounded-lg border p-2 ${hasFile ? "border-success bg-success/5" : "border-border"}`}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium">{slotName}</span>
+                  {hasFile && <Check className="size-3.5 text-success" />}
+                </div>
+                {hasFile && (
+                  <img src={URL.createObjectURL(files[i])} alt="" className="w-full aspect-video object-cover rounded mb-1.5" />
+                )}
+                <input id={`${subId}-camera`} type="file" accept="image/*" capture="environment" className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const updated = [...files];
+                    updated[i] = file;
+                    onChange(updated);
+                  }} />
+                <input id={`${subId}-gallery`} type="file" accept="image/*" className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const updated = [...files];
+                    updated[i] = file;
+                    onChange(updated);
+                  }} />
+                <div className="flex gap-1.5">
+                  <label htmlFor={`${subId}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
+                    <Camera className="size-3.5" /> Камера
+                  </label>
+                  <label htmlFor={`${subId}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
+                    <Upload className="size-3.5" /> Галерея
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+      <>
       <input
         id={`${id}-camera`}
         type="file"
@@ -979,7 +1025,7 @@ function PhotoSlot({
         capture="environment"
         multiple={count > 1}
         className="hidden"
-        onChange={(e) => onChange(e.target.files)}
+        onChange={(e) => onChange(Array.from(e.target.files ?? []).slice(0, count))}
       />
       <input
         id={`${id}-gallery`}
@@ -987,7 +1033,7 @@ function PhotoSlot({
         accept="image/*"
         multiple={count > 1}
         className="hidden"
-        onChange={(e) => onChange(e.target.files)}
+        onChange={(e) => onChange(Array.from(e.target.files ?? []).slice(0, count))}
       />
       <div className="flex gap-2">
         <label htmlFor={`${id}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
@@ -1009,6 +1055,8 @@ function PhotoSlot({
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );
