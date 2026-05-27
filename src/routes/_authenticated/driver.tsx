@@ -290,6 +290,7 @@ function DriverForm({
   >([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [activeCarIndex, setActiveCarIndex] = useState(0);
 
   function validateField(name: string, value: string): string {
     if (name === "full_name") {
@@ -775,95 +776,69 @@ function DriverForm({
         </Section>
 
         <Section title={t.vinList}>
-          <div className="space-y-2">
-            {form.vin_last4.map((v, i) => (
-              <div key={i} className="flex gap-2 items-center">
-                <span className="text-sm text-muted-foreground w-6">{i + 1}.</span>
-                <Input
-                  inputMode="numeric"
-                  pattern="\d{4}"
-                  maxLength={4}
-                  placeholder="0000"
-                  required
-                  value={v}
-                  onChange={(e) => setVin(i, e.target.value)}
-                />
-                {form.vin_last4.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeVin(i)}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={addVin}>
-              <Plus className="size-4 mr-1" /> {t.addVin}
-            </Button>
-          </div>
-        </Section>
-
-        <Section title={t.photos}>
-          <div className="space-y-6">
-            {form.vin_last4.map((vin, vi) => {
-              const readyCount = PHOTO_CATEGORIES.filter(
-                (c) => (photos[vi]?.[c.key]?.length ?? 0) === c.count
-              ).length;
+          <div className="flex gap-2 items-center overflow-x-auto pb-1">
+            {form.vin_last4.map((vin, i) => {
+              const allPhotosReady = !isResubmit && PHOTO_CATEGORIES.every(c => (photos[i]?.[c.key]?.length ?? 0) === c.count);
               return (
-                <div key={vi} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">
-                      Авто {vi + 1}{vin.length === 4 ? ` — ...${vin}` : ""}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {readyCount}/{PHOTO_CATEGORIES.length} категорій
-                    </span>
-                  </div>
-                  {isResubmit ? (
-                    PHOTO_CATEGORIES.map((c) => {
-                      const originalVinCount = originalData?.vin_last4?.length ?? 0;
-                      const isNewVin = vi >= originalVinCount;
-                      const rejInCat = rejected.filter(
-                        (r) => r.vin_index === vi && r.category === c.key
-                      );
-                      if (!isNewVin && !rejInCat.length) return null;
-                      return (
-                        <PhotoSlot
-                          key={c.key}
-                          vinIndex={vi}
-                          category={c.key}
-                          label={getCategoryLabel(t, c.key)}
-                          count={isNewVin ? c.count : rejInCat.length}
-                          files={photos[vi]?.[c.key] ?? []}
-                          required={true}
-                          rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({
-                            id: r.id, signed_url: r.signed_url, comment: r.comment,
-                          }))}
-                          onChange={(files) => handlePhotos(vi, c.key, files, isNewVin ? c.count : rejInCat.length)}
-                        />
-                      );
-                    })
-                  ) : (
-                    PHOTO_CATEGORIES.map((c) => (
-                      <PhotoSlot
-                        key={c.key}
-                        category={c.key}
-                        label={getCategoryLabel(t, c.key)}
-                        count={c.count}
-                        files={photos[vi]?.[c.key] ?? []}
-                        required={true}
-                        rejectedItems={[]}
-                        onChange={(files) => handlePhotos(vi, c.key, files, c.count)}
-                        vinIndex={vi}
-                      />
-                    ))
-                  )}
-                </div>
+                <button key={i} type="button"
+                  onClick={() => setActiveCarIndex(i)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                    activeCarIndex === i
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary border-transparent"
+                  }`}>
+                  {allPhotosReady && <Check className="size-3.5" />}
+                  Авто {i + 1}{vin.length === 4 ? ` · ${vin}` : ""}
+                </button>
               );
             })}
+            <button type="button" onClick={() => { addVin(); setActiveCarIndex(form.vin_last4.length); }}
+              className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm border border-dashed border-border hover:border-primary/50 transition-colors">
+              <Plus className="size-3.5" /> {t.addVin}
+            </button>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <div className="flex gap-2 items-center">
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
+                <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
+                  value={form.vin_last4[activeCarIndex] ?? ""}
+                  onChange={(e) => setVin(activeCarIndex, e.target.value)} />
+              </div>
+              {form.vin_last4.length > 1 && (
+                <Button type="button" variant="ghost" size="icon" className="mt-5"
+                  onClick={() => { removeVin(activeCarIndex); setActiveCarIndex((i) => Math.max(0, i - 1)); }}>
+                  <X className="size-4" />
+                </Button>
+              )}
+            </div>
+
+            {isResubmit ? (
+              PHOTO_CATEGORIES.map((c) => {
+                const originalVinCount = originalData?.vin_last4?.length ?? 0;
+                const isNewVin = activeCarIndex >= originalVinCount;
+                const rejInCat = rejected.filter((r) => r.vin_index === activeCarIndex && r.category === c.key);
+                if (!isNewVin && !rejInCat.length) return null;
+                return (
+                  <PhotoSlot key={c.key} vinIndex={activeCarIndex} category={c.key}
+                    label={getCategoryLabel(t, c.key)}
+                    count={isNewVin ? c.count : rejInCat.length}
+                    files={photos[activeCarIndex]?.[c.key] ?? []}
+                    required={true}
+                    rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
+                    onChange={(files) => handlePhotos(activeCarIndex, c.key, files, isNewVin ? c.count : rejInCat.length)} />
+                );
+              })
+            ) : (
+              PHOTO_CATEGORIES.map((c) => (
+                <PhotoSlot key={c.key} vinIndex={activeCarIndex} category={c.key}
+                  label={getCategoryLabel(t, c.key)} count={c.count}
+                  files={photos[activeCarIndex]?.[c.key] ?? []}
+                  required={true} rejectedItems={[]}
+                  onChange={(files) => handlePhotos(activeCarIndex, c.key, files, c.count)} />
+              ))
+            )}
           </div>
         </Section>
 
