@@ -412,6 +412,30 @@ function DriverForm({
     })();
   }, [existingTrip]);
 
+  // Load draft from localStorage (new trip only)
+  useEffect(() => {
+    if (existingTrip) return;
+    const raw = localStorage.getItem("vanlink_draft");
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      if (saved.form) setForm(saved.form);
+      if (saved.activeCarIndex !== undefined) setActiveCarIndex(saved.activeCarIndex);
+    } catch {
+      // ignore corrupted draft
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on form changes (new trip only, debounced)
+  useEffect(() => {
+    if (existingTrip) return;
+    const t = setTimeout(() => {
+      localStorage.setItem("vanlink_draft", JSON.stringify({ form, activeCarIndex }));
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [form, activeCarIndex, existingTrip]);
+
   function setVin(i: number, v: string) {
     setForm((f) => {
       const copy = [...f.vin_last4];
