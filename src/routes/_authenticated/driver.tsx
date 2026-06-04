@@ -555,6 +555,7 @@ function DriverForm({
 
     setSubmitting(true);
     let tripId = existingTrip?.id;
+    let stage: "trip" | "photo" = "trip";
     try {
       if (existingTrip) {
         // update trip data, set status back to pending
@@ -580,6 +581,7 @@ function DriverForm({
           const vi = parseInt(key.slice(0, splitIdx));
           const cat = key.slice(splitIdx + 2) as PhotoCategoryKey;
           const files = photos[vi]?.[cat] ?? [];
+          stage = "photo";
           for (let i = 0; i < items.length; i++) {
             const target = items[i];
             const file = files[i];
@@ -604,6 +606,7 @@ function DriverForm({
           for (const c of PHOTO_CATEGORIES) {
             const files = photos[vi]?.[c.key] ?? [];
             if (!files.length) continue;
+            stage = "photo";
             for (const file of files) {
               const ext = file.name.split(".").pop() || "jpg";
               const path = `${user.id}/${existingTrip.id}/${c.key}/${vi}/${crypto.randomUUID()}.${ext}`;
@@ -636,6 +639,7 @@ function DriverForm({
           for (const c of PHOTO_CATEGORIES) {
             const files = photos[vi]?.[c.key] ?? [];
             if (!files.length) continue;
+            stage = "photo";
             for (const file of files) {
               const ext = file.name.split(".").pop() || "jpg";
               const path = `${user.id}/${tripId}/${c.key}/${vi}/${crypto.randomUUID()}.${ext}`;
@@ -685,8 +689,14 @@ function DriverForm({
         }
         tripId = undefined;
       }
-      const msg = err instanceof Error ? err.message : t.submitError;
-      toast.error(msg);
+      console.error("submit failed", err);
+      if (stage === "photo") {
+        toast.error("Помилка завантаження фото. Перевірте інтернет-з'єднання.");
+      } else if (existingTrip) {
+        toast.error("Не вдалося зберегти зміни. Спробуйте ще раз.");
+      } else {
+        toast.error("Не вдалося створити поїздку. Спробуйте ще раз.");
+      }
     } finally {
       setSubmitting(false);
     }
