@@ -633,6 +633,9 @@ function DriverForm({
       }
 
       toast.success(t.tripSubmitted);
+      if (!existingTrip) {
+        localStorage.removeItem("vanlink_draft");
+      }
       onDone();
     } catch (err: unknown) {
       // If we just created a new trip this attempt and upload failed,
@@ -870,10 +873,21 @@ function DriverForm({
           <div className="space-y-4 pt-2">
             <div className="flex gap-2 items-center">
               <div className="flex-1">
-                <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
-                <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
-                  value={form.vin_last4[activeCarIndex] ?? ""}
-                  onChange={(e) => setVin(activeCarIndex, e.target.value)} />
+                {isResubmit && activeCarIndex < (originalData?.vin_last4?.length ?? 0) ? (
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Останні 4 цифри VIN</div>
+                    <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted text-muted-foreground">
+                      {form.vin_last4[activeCarIndex] || "—"}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
+                    <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
+                      value={form.vin_last4[activeCarIndex] ?? ""}
+                      onChange={(e) => setVin(activeCarIndex, e.target.value)} />
+                  </>
+                )}
               </div>
               {form.vin_last4.length > 1 && (
                 <Button type="button" variant="ghost" size="icon" className="mt-5"
