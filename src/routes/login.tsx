@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Truck, Mail } from "lucide-react";
+import { Truck, Mail, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -24,6 +24,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [resetSent, setResetSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!authLoading && session) return <Navigate to="/" />;
 
@@ -116,7 +117,7 @@ function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("magic")}
-                    className={`text-sm font-medium py-2 px-3 rounded-md transition ${
+                    className={`text-sm font-medium py-2 px-4 rounded-md transition ${
                       activeTab === "magic"
                         ? "bg-primary text-primary-foreground shadow"
                         : "text-muted-foreground hover:text-foreground"
@@ -127,7 +128,7 @@ function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("password")}
-                    className={`text-sm font-medium py-2 px-3 rounded-md transition ${
+                    className={`text-sm font-medium py-2 px-4 rounded-md transition ${
                       activeTab === "password"
                         ? "bg-primary text-primary-foreground shadow"
                         : "text-muted-foreground hover:text-foreground"
@@ -170,14 +171,26 @@ function LoginPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Пароль</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        required
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          tabIndex={-1}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
                     </div>
                     <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
                       <input

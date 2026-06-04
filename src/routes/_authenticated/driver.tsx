@@ -288,6 +288,9 @@ function DriverForm({
   const [rejected, setRejected] = useState<
     { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null; vin_index: number }[]
   >([]);
+  const [approved, setApproved] = useState<
+    { id: string; category: string; signed_url: string | null; vin_index: number }[]
+  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [activeCarIndex, setActiveCarIndex] = useState(0);
@@ -379,9 +382,9 @@ function DriverForm({
       }
       const { data: rj } = await supabase
         .from("trip_photos")
-        .select("id,category,storage_path,comment,vin_index")
+        .select("id,category,storage_path,comment,vin_index,status")
         .eq("trip_id", existingTrip.id)
-        .eq("status", "rejected");
+        .in("status", ["rejected", "approved"]);
       const enriched = await Promise.all(
         (rj ?? []).map(async (p) => {
           const { data } = await supabase.storage
@@ -390,9 +393,19 @@ function DriverForm({
           return { ...p, signed_url: data?.signedUrl ?? null };
         }),
       );
-      setRejected(enriched);
+      const rejectedRows = enriched.filter((p) => p.status === "rejected");
+      const approvedRows = enriched.filter((p) => p.status === "approved");
+      setRejected(rejectedRows);
+      setApproved(
+        approvedRows.map((p) => ({
+          id: p.id,
+          category: p.category,
+          signed_url: p.signed_url,
+          vin_index: p.vin_index,
+        })),
+      );
       const photoInit: Record<number, Record<PhotoCategoryKey, File[]>> = {};
-      for (const r of enriched) {
+      for (const r of rejectedRows) {
         if (!photoInit[r.vin_index]) photoInit[r.vin_index] = emptyCarPhotos();
       }
       setPhotos(photoInit);
@@ -860,6 +873,9 @@ function DriverForm({
                     required={true}
                     subSlots={isNewVin ? c.subSlots : undefined}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
+                    approvedItems={isNewVin ? [] : approved
+                      .filter((p) => p.vin_index === activeCarIndex && p.category === c.key)
+                      .map((p) => ({ signed_url: p.signed_url ?? "" }))}
                     onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
                 );
               })
@@ -928,6 +944,7 @@ function PhotoSlot({
   onChange,
   required,
   rejectedItems,
+  approvedItems,
   vinIndex,
   category,
   subSlots,
@@ -938,6 +955,7 @@ function PhotoSlot({
   files: File[];
   required: boolean;
   rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
+  approvedItems?: { signed_url: string }[];
   onChange: (files: File[]) => void;
   vinIndex: number;
   subSlots?: readonly string[];
@@ -956,6 +974,19 @@ function PhotoSlot({
         </Label>
         {files.length === count && <Check className="size-4 text-success" />}
       </div>
+      {approvedItems && approvedItems.length > 0 && (
+        <div className="mb-2">
+          <p className="text-[11px] text-success font-medium mb-1">Прийнято</p>
+          <div className="grid grid-cols-3 gap-2">
+            {approvedItems.map((a, i) => (
+              <div key={i} className="relative">
+                <img src={a.signed_url} className="aspect-square w-full object-cover rounded-md border-2 border-success" alt="" />
+                <span className="absolute top-0.5 right-0.5 bg-success text-white text-[9px] rounded-full px-1">✓</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {rejectedItems && rejectedItems.length > 0 && (
         <div className="mb-2 grid grid-cols-3 gap-2">
           {rejectedItems.map((r) => (
