@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
+import { PHOTO_CATEGORIES, getCategoryLabel } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,7 @@ type Photo = {
   storage_path: string;
   status: "pending" | "approved" | "rejected";
   comment: string | null;
+  vin_index: number;
   url?: string;
 };
 
@@ -70,7 +71,7 @@ function TripDetailPage() {
 
     const { data: ph } = await supabase
       .from("trip_photos")
-      .select("id,category,storage_path,status,comment")
+      .select("id,category,storage_path,status,comment,vin_index")
       .eq("trip_id", tripId)
       .order("created_at", { ascending: true });
 
@@ -174,7 +175,6 @@ function TripDetailPage() {
     }
   }
 
-  const photosByCat = (cat: PhotoCategoryKey) => photos.filter((p) => p.category === cat);
   const editable = trip.status !== "approved";
   const isResubmitTrip = trip.previous_data !== null && trip.status === "pending";
 
@@ -305,25 +305,37 @@ function TripDetailPage() {
       </div>
 
       <div className="space-y-6">
-        {PHOTO_CATEGORIES.map((c) => {
-          const cps = photosByCat(c.key);
-          if (!cps.length) return null;
+        {trip.vin_last4.map((vin, vi) => {
+          const vinPhotos = photos.filter((p) => p.vin_index === vi);
+          if (!vinPhotos.length) return null;
           return (
-            <section key={c.key}>
-              <h3 className="font-semibold mb-2">{getCategoryLabel(t, c.key)}</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {cps.map((p) => (
-                <PhotoCard
-                    key={p.id}
-                    photo={p}
-                    comment={comments[p.id] ?? ""}
-                    onComment={(v) => setComments((m) => ({ ...m, [p.id]: v }))}
-                    onReject={() => setPhotoStatus(p.id, p.status === "rejected" ? "approved" : "rejected")}
-                    editable={editable}
-                    isResubmitted={isResubmitTrip}
-                  />
-                ))}
+            <section key={vi} className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-border pb-2">
+                <span className="font-mono px-2 py-0.5 rounded bg-secondary text-sm">{vin}</span>
+                <span className="text-sm text-muted-foreground font-medium">Авто {vi + 1}</span>
               </div>
+              {PHOTO_CATEGORIES.map((c) => {
+                const cps = vinPhotos.filter((p) => p.category === c.key);
+                if (!cps.length) return null;
+                return (
+                  <div key={c.key}>
+                    <h4 className="text-sm font-medium mb-2">{getCategoryLabel(t, c.key)}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {cps.map((p) => (
+                        <PhotoCard
+                          key={p.id}
+                          photo={p}
+                          comment={comments[p.id] ?? ""}
+                          onComment={(v) => setComments((m) => ({ ...m, [p.id]: v }))}
+                          onReject={() => setPhotoStatus(p.id, p.status === "rejected" ? "approved" : "rejected")}
+                          editable={editable}
+                          isResubmitted={isResubmitTrip}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </section>
           );
         })}
