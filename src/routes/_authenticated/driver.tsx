@@ -1103,12 +1103,26 @@ function PhotoSlot({
           {subSlots.map((slotName, i) => {
             const subId = `${id}-sub-${i}`;
             const hasFile = !!files[i];
+            const subTemplate =
+              category === "van_corners"
+                ? `/templates/corner_${i}.jpeg`
+                : category === "documents"
+                ? `/templates/doc_${i}.jpeg`
+                : undefined;
             return (
               <div key={i} className={`rounded-lg border p-2 ${hasFile ? "border-success bg-success/5" : "border-border"}`}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium">{slotName}</span>
                   {hasFile && <Check className="size-3.5 text-success" />}
                 </div>
+                {subTemplate && (
+                  <details className="mb-1.5">
+                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
+                      📷 Приклад фото
+                    </summary>
+                    <img src={subTemplate} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+                  </details>
+                )}
                 {hasFile && (
                   <img src={URL.createObjectURL(files[i])} alt="" className="w-full aspect-video object-cover rounded mb-1.5" />
                 )}
