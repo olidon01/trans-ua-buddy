@@ -2,7 +2,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-function appUrl(): string {
+export function appUrl(): string {
   return "https://trans-ua-buddy.lovable.app";
 }
 
@@ -73,12 +73,20 @@ export function categoryLabel(key: string): string {
   return CATEGORY_LABELS[key] ?? key;
 }
 
-export function renderApprovedEmail(fullName: string) {
+export function renderApprovedEmail(fullName: string, driverLink?: string) {
+  const link = driverLink || `${appUrl()}/driver`;
   return `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
       <h2 style="margin:0 0 12px">Вашу поїздку затверджено ✅</h2>
       <p>Вітаємо, ${escapeHtml(fullName)}!</p>
       <p>Адміністратор перевірив і затвердив вашу поїздку. Можете вирушати.</p>
+      <p style="margin-top:24px">
+        <a href="${link}"
+           style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Відкрити VanLink →
+        </a>
+      </p>
       <p style="color:#666;font-size:12px;margin-top:32px">VanLink</p>
     </div>`;
 }
@@ -87,6 +95,7 @@ export function renderRejectedEmail(opts: {
   fullName: string;
   adminComment: string;
   rejected: { category: string; comment: string | null }[];
+  driverLink?: string;
 }) {
   const items = opts.rejected
     .map(
@@ -96,6 +105,7 @@ export function renderRejectedEmail(opts: {
         }</li>`,
     )
     .join("");
+  const link = opts.driverLink || `${appUrl()}/driver`;
   return `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
       <h2 style="margin:0 0 12px">Потрібно перезавантажити фото</h2>
@@ -107,26 +117,31 @@ export function renderRejectedEmail(opts: {
       <p>Відхилені фото:</p>
       <ul>${items}</ul>
       <p>Будь ласка, завантажте нові фото для зазначених позицій.</p>
-      ${appUrl() ? `
       <p style="margin-top:24px">
-        <a href="${appUrl()}/driver"
+        <a href="${link}"
            style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;
                   padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
           Завантажити нові фото →
         </a>
-      </p>` : ""}
+      </p>
       <p style="color:#666;font-size:12px;margin-top:32px">VanLink</p>
     </div>`;
 }
 
-export function renderApprovedTelegram(fullName: string) {
-  return `✅ <b>Вашу поїздку затверджено</b>\n\nВітаємо, ${escapeHtml(fullName)}! Можете вирушати.`;
+export function renderApprovedTelegram(fullName: string, driverLink?: string) {
+  const link = driverLink || `${appUrl()}/driver`;
+  return (
+    `✅ <b>Вашу поїздку затверджено</b>\n\n` +
+    `Вітаємо, ${escapeHtml(fullName)}! Можете вирушати.` +
+    `\n\n👉 <a href="${link}">Відкрити VanLink</a>`
+  );
 }
 
 export function renderRejectedTelegram(opts: {
   fullName: string;
   adminComment: string;
   rejected: { category: string; comment: string | null }[];
+  driverLink?: string;
 }) {
   const items = opts.rejected
     .map(
@@ -136,13 +151,13 @@ export function renderRejectedTelegram(opts: {
         }`,
     )
     .join("\n");
-  const link = appUrl();
+  const link = opts.driverLink || `${appUrl()}/driver`;
   return (
     `⚠️ <b>Потрібно перезавантажити фото</b>\n\n` +
     `${escapeHtml(opts.fullName)}, адміністратор повернув поїздку на доопрацювання.\n\n` +
     `Відхилені фото:\n${items}` +
     (opts.adminComment ? `\n\n💬 <i>${escapeHtml(opts.adminComment)}</i>` : "") +
-    (link ? `\n\n👉 <a href="${link}/driver">Перейти до застосунку</a>` : "")
+    `\n\n👉 <a href="${link}">Перейти до застосунку</a>`
   );
 }
 
