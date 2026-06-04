@@ -521,8 +521,32 @@ function DriverForm({
       return;
     }
 
+    for (let i = 0; i < form.vin_last4.length; i++) {
+      if (!form.vin_last4[i] || !/^\d{4}$/.test(form.vin_last4[i])) {
+        toast.error(`Авто ${i + 1}: введіть останні 4 цифри VIN`);
+        return;
+      }
+    }
+    if (!form.company_name.trim()) {
+      toast.error(`Заповніть поле: ${t.companyName}`);
+      return;
+    }
+    if (!form.car_number.trim()) {
+      toast.error(`Заповніть поле: ${t.carNumber}`);
+      return;
+    }
+    if (!form.trailer_number.trim()) {
+      toast.error(`Заповніть поле: ${t.trailerNumber}`);
+      return;
+    }
+    if (!form.passport_number.trim()) {
+      toast.error(`Заповніть поле: ${t.passportNumber}`);
+      return;
+    }
+
     const parsed = tripSchema.safeParse(form);
     if (!parsed.success) {
+      console.error("Trip form validation errors:", parsed.error.issues);
       toast.error(t.formInvalid);
       return;
     }
