@@ -102,6 +102,7 @@ type SubmittedPhoto = {
   id: string;
   category: string;
   url: string | null;
+  vin_index: number;
 };
 
 function WaitingScreen({ tripId }: { tripId: string }) {
@@ -122,7 +123,7 @@ function WaitingScreen({ tripId }: { tripId: string }) {
       if (data) setTrip(data as FullTrip);
       const { data: ph } = await supabase
         .from("trip_photos")
-        .select("id,category,storage_path")
+        .select("id,category,storage_path,vin_index")
         .eq("trip_id", tripId)
         .order("created_at", { ascending: true });
       const enriched = await Promise.all(
@@ -130,7 +131,7 @@ function WaitingScreen({ tripId }: { tripId: string }) {
           const { data: signed } = await supabase.storage
             .from("trip-photos")
             .createSignedUrl(p.storage_path, 60 * 60);
-          return { id: p.id, category: p.category, url: signed?.signedUrl ?? null };
+          return { id: p.id, category: p.category, url: signed?.signedUrl ?? null, vin_index: p.vin_index };
         }),
       );
       setPhotos(enriched);
@@ -190,18 +191,41 @@ function WaitingScreen({ tripId }: { tripId: string }) {
                   <div className="text-xs uppercase text-muted-foreground tracking-wide mb-2">
                     {t.photos}
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {photos.map((p) =>
-                      p.url ? (
-                        <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
-                          <img
-                            src={p.url}
-                            alt=""
-                            className="aspect-square w-full object-cover rounded-lg border border-border"
-                          />
-                        </a>
-                      ) : null,
-                    )}
+                  <div className="space-y-4">
+                    {trip.vin_last4.map((vin, vi) => {
+                      const vinPhotos = photos.filter((p) => p.vin_index === vi);
+                      if (!vinPhotos.length) return null;
+                      return (
+                        <div key={vi} className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm px-2 py-0.5 rounded bg-secondary">{vin}</span>
+                            <span className="text-xs text-muted-foreground">Авто {vi + 1}</span>
+                          </div>
+                          {PHOTO_CATEGORIES.map((c) => {
+                            const catPhotos = vinPhotos.filter((p) => p.category === c.key);
+                            if (!catPhotos.length) return null;
+                            return (
+                              <div key={c.key}>
+                                <div className="text-xs text-muted-foreground mb-1.5">{getCategoryLabel(t, c.key)}</div>
+                                <div className="grid grid-cols-4 gap-1.5">
+                                  {catPhotos.map((p) =>
+                                    p.url ? (
+                                      <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
+                                        <img
+                                          src={p.url}
+                                          alt=""
+                                          className="aspect-square w-full object-cover rounded-lg border border-border"
+                                        />
+                                      </a>
+                                    ) : null,
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
