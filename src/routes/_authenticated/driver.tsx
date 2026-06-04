@@ -21,6 +21,7 @@ import {
   Plus, X, Upload, Camera, Check, Clock, AlertTriangle, Loader2, ChevronDown,
 } from "lucide-react";
 import { z } from "zod";
+import { getBotUsername } from "@/lib/notifications.functions";
 
 export const Route = createFileRoute("/_authenticated/driver")({
   component: DriverPage,
@@ -305,6 +306,8 @@ function DriverForm({
     telegram_notifications: true,
     telegram_username: "",
   });
+  const [tgBotUsername, setTgBotUsername] = useState<string>("");
+  const [telegramConnected, setTelegramConnected] = useState<boolean | null>(null);
   const [photos, setPhotos] = useState<Record<number, Record<PhotoCategoryKey, File[]>>>({
     0: emptyCarPhotos(),
   });
@@ -370,7 +373,7 @@ function DriverForm({
     void (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("email_notifications, telegram_notifications, telegram_username")
+        .select("email_notifications, telegram_notifications, telegram_username, telegram_chat_id")
         .eq("id", user.id)
         .maybeSingle();
       if (data) {
@@ -379,6 +382,13 @@ function DriverForm({
           telegram_notifications: data.telegram_notifications ?? true,
           telegram_username: data.telegram_username ?? "",
         });
+        setTelegramConnected(!!data.telegram_chat_id);
+      }
+      try {
+        const res = await getBotUsername();
+        setTgBotUsername(res.username);
+      } catch (e) {
+        console.error("getBotUsername failed", e);
       }
     })();
   }, [user?.id]);
@@ -883,8 +893,33 @@ function DriverForm({
                   <p className="text-xs text-destructive">{fieldErrors.telegram}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {t.telegramHint}
+                  {tgBotUsername ? (
+                    <>
+                      Щоб отримувати повідомлення —{" "}
+                      <a
+                        href={`https://t.me/${tgBotUsername}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline font-medium"
+                      >
+                        відкрийте бота
+                      </a>{" "}
+                      та натисніть /start.
+                    </>
+                  ) : (
+                    t.telegramHint
+                  )}
                 </p>
+                {prefs.telegram_notifications &&
+                  prefs.telegram_username.trim() !== "" &&
+                  telegramConnected === false && (
+                    <div className="flex items-start gap-2 rounded-lg border border-orange-400/40 bg-orange-400/10 p-2.5 text-xs">
+                      <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-orange-500" />
+                      <span className="text-orange-700 dark:text-orange-400">
+                        Telegram ще не підʼєднано. Ви не отримаєте повідомлення, поки не натиснете /start у боті.
+                      </span>
+                    </div>
+                  )}
               </div>
             )}
           </div>

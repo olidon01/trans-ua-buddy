@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   adminClient,
   appUrl,
+  botUsername,
   renderApprovedEmail,
   renderApprovedTelegram,
   renderRejectedEmail,
@@ -15,6 +16,10 @@ import {
 const InputSchema = z.object({
   tripId: z.string().uuid(),
   kind: z.enum(["approved", "rejected"]),
+});
+
+export const getBotUsername = createServerFn({ method: "GET" }).handler(async () => {
+  return { username: botUsername() };
 });
 
 export const notifyTrip = createServerFn({ method: "POST" })
