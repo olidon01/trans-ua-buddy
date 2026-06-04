@@ -288,6 +288,9 @@ function DriverForm({
   const [rejected, setRejected] = useState<
     { id: string; category: string; storage_path: string; comment: string | null; signed_url: string | null; vin_index: number }[]
   >([]);
+  const [approved, setApproved] = useState<
+    { id: string; category: string; signed_url: string | null; vin_index: number }[]
+  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [activeCarIndex, setActiveCarIndex] = useState(0);
@@ -379,9 +382,9 @@ function DriverForm({
       }
       const { data: rj } = await supabase
         .from("trip_photos")
-        .select("id,category,storage_path,comment,vin_index")
+        .select("id,category,storage_path,comment,vin_index,status")
         .eq("trip_id", existingTrip.id)
-        .eq("status", "rejected");
+        .in("status", ["rejected", "approved"]);
       const enriched = await Promise.all(
         (rj ?? []).map(async (p) => {
           const { data } = await supabase.storage
@@ -390,9 +393,19 @@ function DriverForm({
           return { ...p, signed_url: data?.signedUrl ?? null };
         }),
       );
-      setRejected(enriched);
+      const rejectedRows = enriched.filter((p) => p.status === "rejected");
+      const approvedRows = enriched.filter((p) => p.status === "approved");
+      setRejected(rejectedRows);
+      setApproved(
+        approvedRows.map((p) => ({
+          id: p.id,
+          category: p.category,
+          signed_url: p.signed_url,
+          vin_index: p.vin_index,
+        })),
+      );
       const photoInit: Record<number, Record<PhotoCategoryKey, File[]>> = {};
-      for (const r of enriched) {
+      for (const r of rejectedRows) {
         if (!photoInit[r.vin_index]) photoInit[r.vin_index] = emptyCarPhotos();
       }
       setPhotos(photoInit);

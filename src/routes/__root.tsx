@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1.0" },
       { title: "VanLink — Логістика PL → UA" },
       { name: "description", content: "Платформа для перевезень авто з Польщі в Україну: фотозвіти водіїв та контроль документів." },
       { property: "og:title", content: "VanLink — Логістика PL → UA" },
