@@ -1004,11 +1004,32 @@ function DriverForm({
                 const originalVinCount = originalData?.vin_last4?.length ?? 0;
                 const isNewVin = activeCarIndex >= originalVinCount;
                 const rejInCat = rejected.filter((r) => r.vin_index === activeCarIndex && r.category === c.key);
-                if (!isNewVin && !rejInCat.length) return null;
+                if (!isNewVin && !rejInCat.length) {
+                  const approvedInCat = approved.filter(
+                    (p) => p.vin_index === activeCarIndex && p.category === c.key
+                  );
+                  if (!approvedInCat.length) return null;
+                  return (
+                    <div key={c.key} className="rounded-xl border-2 border-green-500/40 bg-green-500/5 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Check className="size-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                          {getCategoryLabel(t, c.key)}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {approvedInCat.map((p, i) => (
+                          <img key={i} src={p.signed_url ?? ""} alt=""
+                               className="aspect-square w-full object-cover rounded-lg border border-green-500/40" />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
                 return (
                   <PhotoSlot key={c.key} vinIndex={activeCarIndex} category={c.key}
                     label={getCategoryLabel(t, c.key)}
-                    count={c.subSlots ? c.count : isNewVin ? c.count : rejInCat.length}
+                    count={isNewVin ? c.count : rejInCat.length}
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
                     subSlots={c.subSlots}
