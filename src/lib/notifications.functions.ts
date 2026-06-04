@@ -48,6 +48,14 @@ export const notifyTrip = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!profile) return { sent: { email: false, telegram: false } };
 
+    console.log("[notifyTrip] profile:", {
+      hasProfile: !!profile,
+      emailNotifications: profile?.email_notifications,
+      telegramNotifications: profile?.telegram_notifications,
+      hasTelegramChatId: !!profile?.telegram_chat_id,
+      hasEmail: !!profile?.email,
+    });
+
     // Generate magic link for one-click sign-in
     let driverLink = `${appUrl()}/driver`;
     if (profile.email) {
@@ -101,7 +109,7 @@ export const notifyTrip = createServerFn({ method: "POST" })
         }
         result.email = true;
       } catch (e) {
-        console.error("email send failed", e);
+        console.error("[notifyTrip] email failed:", e instanceof Error ? e.message : e);
       }
     }
 
@@ -120,9 +128,10 @@ export const notifyTrip = createServerFn({ method: "POST" })
         await sendTelegramMessage(profile.telegram_chat_id, text);
         result.telegram = true;
       } catch (e) {
-        console.error("telegram send failed", e);
+        console.error("[notifyTrip] telegram failed:", e instanceof Error ? e.message : e);
       }
     }
 
+    console.log("[notifyTrip] result:", result);
     return { sent: result };
   });
