@@ -319,6 +319,15 @@ function DriverForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [activeCarIndex, setActiveCarIndex] = useState(0);
 
+  const TEMPLATE_PHOTOS: Partial<Record<PhotoCategoryKey, string>> = {
+    van_overview: "/templates/van_overview.jpeg",
+    vin_plate: "/templates/vin_plate.jpeg",
+    vin_windshield: "/templates/vin_windshield.jpeg",
+    interior: "/templates/interior.jpeg",
+    cargo: "/templates/cargo.jpeg",
+    documents: "/templates/doc_0.jpeg",
+  };
+
   function validateField(name: string, value: string): string {
     if (name === "full_name") {
       if (!value.trim()) return t.required;
@@ -944,6 +953,7 @@ function DriverForm({
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
                     subSlots={c.subSlots}
+                    templateSrc={TEMPLATE_PHOTOS[c.key]}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
                     approvedItems={isNewVin ? [] : approved
                       .filter((p) => p.vin_index === activeCarIndex && p.category === c.key)
@@ -958,6 +968,7 @@ function DriverForm({
                   files={photos[activeCarIndex]?.[c.key] ?? []}
                   required={true} rejectedItems={[]}
                   subSlots={c.subSlots}
+                  templateSrc={TEMPLATE_PHOTOS[c.key]}
                   onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
               ))
             )}
@@ -1020,6 +1031,7 @@ function PhotoSlot({
   vinIndex,
   category,
   subSlots,
+  templateSrc,
 }: {
   category: string;
   label: string;
@@ -1031,6 +1043,7 @@ function PhotoSlot({
   onChange: (files: File[]) => void;
   vinIndex: number;
   subSlots?: readonly string[];
+  templateSrc?: string;
 }) {
   const { t } = useLanguage();
   const id = `photo-${vinIndex}-${category}`;
@@ -1046,6 +1059,14 @@ function PhotoSlot({
         </Label>
         {files.length === count && <Check className="size-4 text-success" />}
       </div>
+      {templateSrc && !subSlots && (
+        <details className="mb-2">
+          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
+            📷 Приклад фото
+          </summary>
+          <img src={templateSrc} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+        </details>
+      )}
       {approvedItems && approvedItems.length > 0 && (
         <div className="mb-2">
           <p className="text-[11px] text-success font-medium mb-1">Прийнято</p>
@@ -1082,12 +1103,26 @@ function PhotoSlot({
           {subSlots.map((slotName, i) => {
             const subId = `${id}-sub-${i}`;
             const hasFile = !!files[i];
+            const subTemplate =
+              category === "van_corners"
+                ? `/templates/corner_${i}.jpeg`
+                : category === "documents"
+                ? `/templates/doc_${i}.jpeg`
+                : undefined;
             return (
               <div key={i} className={`rounded-lg border p-2 ${hasFile ? "border-success bg-success/5" : "border-border"}`}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium">{slotName}</span>
                   {hasFile && <Check className="size-3.5 text-success" />}
                 </div>
+                {subTemplate && (
+                  <details className="mb-1.5">
+                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
+                      📷 Приклад фото
+                    </summary>
+                    <img src={subTemplate} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+                  </details>
+                )}
                 {hasFile && (
                   <img src={URL.createObjectURL(files[i])} alt="" className="w-full aspect-video object-cover rounded mb-1.5" />
                 )}

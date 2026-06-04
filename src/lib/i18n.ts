@@ -26,7 +26,7 @@ export const translations = {
     uploadPhotos: "Завантажити фото",
     submit: "Надіслати на перевірку",
     submitting: "Надсилання…",
-    cat_van_overview: "Огляд фургона (1 фото)",
+    cat_van_overview: "Огляд салону з водійської сторони",
     cat_van_corners: "Кути фургона (4 фото)",
     cat_vin_plate: "VIN-табличка (1 фото)",
     cat_vin_windshield: "VIN під лобовим склом (1 фото)",
@@ -122,7 +122,7 @@ export const translations = {
     uploadPhotos: "Dodaj zdjęcie",
     submit: "Wyślij do weryfikacji",
     submitting: "Wysyłanie…",
-    cat_van_overview: "Widok ogólny busa (1 zdjęcie)",
+    cat_van_overview: "Przegląd salonu od strony kierowcy",
     cat_van_corners: "Narożniki busa (4 zdjęcia)",
     cat_vin_plate: "Tabliczka VIN (1 zdjęcie)",
     cat_vin_windshield: "VIN pod szybą (1 zdjęcie)",
@@ -203,11 +203,11 @@ export type Language = keyof typeof translations;
 export type Translations = typeof translations.uk;
 
 export const PHOTO_CATEGORIES = [
-  { key: "van_overview" as const, count: 1 },
   { key: "van_corners" as const, count: 4, subSlots: ["Спереду зліва", "Спереду справа", "Ззаду зліва", "Ззаду справа"] },
   { key: "vin_plate" as const, count: 1 },
   { key: "vin_windshield" as const, count: 1 },
   { key: "interior" as const, count: 1 },
+  { key: "van_overview" as const, count: 1 },
   { key: "cargo" as const, count: 1 },
   { key: "documents" as const, count: 3, subSlots: ["Документ 1", "Документ 2", "Документ 3"] },
 ];
