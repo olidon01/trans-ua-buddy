@@ -930,10 +930,10 @@ function DriverForm({
                 return (
                   <PhotoSlot key={c.key} vinIndex={activeCarIndex} category={c.key}
                     label={getCategoryLabel(t, c.key)}
-                    count={isNewVin ? c.count : c.subSlots ? c.count : rejInCat.length}
+                    count={c.subSlots ? c.count : isNewVin ? c.count : rejInCat.length}
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
-                    subSlots={isNewVin ? c.subSlots : c.subSlots}
+                    subSlots={c.subSlots}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
                     approvedItems={isNewVin ? [] : approved
                       .filter((p) => p.vin_index === activeCarIndex && p.category === c.key)
