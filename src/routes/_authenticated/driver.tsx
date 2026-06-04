@@ -873,6 +873,9 @@ function DriverForm({
                     required={true}
                     subSlots={isNewVin ? c.subSlots : undefined}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
+                    approvedItems={isNewVin ? [] : approved
+                      .filter((p) => p.vin_index === activeCarIndex && p.category === c.key)
+                      .map((p) => ({ signed_url: p.signed_url ?? "" }))}
                     onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
                 );
               })
@@ -941,6 +944,7 @@ function PhotoSlot({
   onChange,
   required,
   rejectedItems,
+  approvedItems,
   vinIndex,
   category,
   subSlots,
@@ -951,6 +955,7 @@ function PhotoSlot({
   files: File[];
   required: boolean;
   rejectedItems?: { id: string; signed_url: string | null; comment: string | null }[];
+  approvedItems?: { signed_url: string }[];
   onChange: (files: File[]) => void;
   vinIndex: number;
   subSlots?: readonly string[];
@@ -969,6 +974,19 @@ function PhotoSlot({
         </Label>
         {files.length === count && <Check className="size-4 text-success" />}
       </div>
+      {approvedItems && approvedItems.length > 0 && (
+        <div className="mb-2">
+          <p className="text-[11px] text-success font-medium mb-1">Прийнято</p>
+          <div className="grid grid-cols-3 gap-2">
+            {approvedItems.map((a, i) => (
+              <div key={i} className="relative">
+                <img src={a.signed_url} className="aspect-square w-full object-cover rounded-md border-2 border-success" alt="" />
+                <span className="absolute top-0.5 right-0.5 bg-success text-white text-[9px] rounded-full px-1">✓</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {rejectedItems && rejectedItems.length > 0 && (
         <div className="mb-2 grid grid-cols-3 gap-2">
           {rejectedItems.map((r) => (
