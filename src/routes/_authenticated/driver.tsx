@@ -953,6 +953,7 @@ function DriverForm({
                     files={photos[activeCarIndex]?.[c.key] ?? []}
                     required={true}
                     subSlots={c.subSlots}
+                    templateSrc={TEMPLATE_PHOTOS[c.key]}
                     rejectedItems={isNewVin ? [] : rejInCat.map((r) => ({ id: r.id, signed_url: r.signed_url, comment: r.comment }))}
                     approvedItems={isNewVin ? [] : approved
                       .filter((p) => p.vin_index === activeCarIndex && p.category === c.key)
@@ -967,6 +968,7 @@ function DriverForm({
                   files={photos[activeCarIndex]?.[c.key] ?? []}
                   required={true} rejectedItems={[]}
                   subSlots={c.subSlots}
+                  templateSrc={TEMPLATE_PHOTOS[c.key]}
                   onChange={(files) => handlePhotos(activeCarIndex, c.key, files)} />
               ))
             )}
