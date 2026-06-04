@@ -3,6 +3,6 @@
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "dist/tanstack-start-app/index.js",
+  "main": "dist/server/server.js",
   "no_bundle": true
 }
