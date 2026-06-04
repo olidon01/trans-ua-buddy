@@ -412,6 +412,30 @@ function DriverForm({
     })();
   }, [existingTrip]);
 
+  // Load draft from localStorage (new trip only)
+  useEffect(() => {
+    if (existingTrip) return;
+    const raw = localStorage.getItem("vanlink_draft");
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      if (saved.form) setForm(saved.form);
+      if (saved.activeCarIndex !== undefined) setActiveCarIndex(saved.activeCarIndex);
+    } catch {
+      // ignore corrupted draft
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on form changes (new trip only, debounced)
+  useEffect(() => {
+    if (existingTrip) return;
+    const t = setTimeout(() => {
+      localStorage.setItem("vanlink_draft", JSON.stringify({ form, activeCarIndex }));
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [form, activeCarIndex, existingTrip]);
+
   function setVin(i: number, v: string) {
     setForm((f) => {
       const copy = [...f.vin_last4];
@@ -609,6 +633,9 @@ function DriverForm({
       }
 
       toast.success(t.tripSubmitted);
+      if (!existingTrip) {
+        localStorage.removeItem("vanlink_draft");
+      }
       onDone();
     } catch (err: unknown) {
       // If we just created a new trip this attempt and upload failed,
@@ -846,10 +873,21 @@ function DriverForm({
           <div className="space-y-4 pt-2">
             <div className="flex gap-2 items-center">
               <div className="flex-1">
-                <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
-                <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
-                  value={form.vin_last4[activeCarIndex] ?? ""}
-                  onChange={(e) => setVin(activeCarIndex, e.target.value)} />
+                {isResubmit && activeCarIndex < (originalData?.vin_last4?.length ?? 0) ? (
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Останні 4 цифри VIN</div>
+                    <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted text-muted-foreground">
+                      {form.vin_last4[activeCarIndex] || "—"}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
+                    <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
+                      value={form.vin_last4[activeCarIndex] ?? ""}
+                      onChange={(e) => setVin(activeCarIndex, e.target.value)} />
+                  </>
+                )}
               </div>
               {form.vin_last4.length > 1 && (
                 <Button type="button" variant="ghost" size="icon" className="mt-5"
