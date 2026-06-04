@@ -1031,6 +1031,7 @@ function PhotoSlot({
   vinIndex,
   category,
   subSlots,
+  templateSrc,
 }: {
   category: string;
   label: string;
@@ -1042,6 +1043,7 @@ function PhotoSlot({
   onChange: (files: File[]) => void;
   vinIndex: number;
   subSlots?: readonly string[];
+  templateSrc?: string;
 }) {
   const { t } = useLanguage();
   const id = `photo-${vinIndex}-${category}`;
@@ -1057,6 +1059,14 @@ function PhotoSlot({
         </Label>
         {files.length === count && <Check className="size-4 text-success" />}
       </div>
+      {templateSrc && !subSlots && (
+        <details className="mb-2">
+          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
+            📷 Приклад фото
+          </summary>
+          <img src={templateSrc} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+        </details>
+      )}
       {approvedItems && approvedItems.length > 0 && (
         <div className="mb-2">
           <p className="text-[11px] text-success font-medium mb-1">Прийнято</p>
