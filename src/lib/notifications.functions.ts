@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   adminClient,
+  appUrl,
   renderApprovedEmail,
   renderApprovedTelegram,
   renderRejectedEmail,
@@ -47,6 +48,23 @@ export const notifyTrip = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!profile) return { sent: { email: false, telegram: false } };
 
+    // Generate magic link for one-click sign-in
+    let driverLink = `${appUrl()}/driver`;
+    if (profile.email) {
+      try {
+        const { data: linkData } = await adminClient().auth.admin.generateLink({
+          type: "magiclink",
+          email: profile.email,
+          options: { redirectTo: `${appUrl()}/driver` },
+        });
+        if (linkData?.properties?.action_link) {
+          driverLink = linkData.properties.action_link;
+        }
+      } catch (e) {
+        console.error("magic link generation failed, using fallback", e);
+      }
+    }
+
     let rejected: { category: string; comment: string | null }[] = [];
     if (data.kind === "rejected") {
       const { data: photos } = await admin
@@ -67,7 +85,7 @@ export const notifyTrip = createServerFn({ method: "POST" })
           await sendResendEmail({
             to: profile.email,
             subject: "VanLink — поїздку затверджено",
-            html: renderApprovedEmail(fullName),
+            html: renderApprovedEmail(fullName, driverLink),
           });
         } else {
           await sendResendEmail({
@@ -77,6 +95,7 @@ export const notifyTrip = createServerFn({ method: "POST" })
               fullName,
               adminComment: trip.admin_comment ?? "",
               rejected,
+              driverLink,
             }),
           });
         }
@@ -91,11 +110,12 @@ export const notifyTrip = createServerFn({ method: "POST" })
       try {
         const text =
           data.kind === "approved"
-            ? renderApprovedTelegram(fullName)
+            ? renderApprovedTelegram(fullName, driverLink)
             : renderRejectedTelegram({
                 fullName,
                 adminComment: trip.admin_comment ?? "",
                 rejected,
+                driverLink,
               });
         await sendTelegramMessage(profile.telegram_chat_id, text);
         result.telegram = true;
