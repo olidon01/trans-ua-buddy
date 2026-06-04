@@ -319,6 +319,15 @@ function DriverForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [activeCarIndex, setActiveCarIndex] = useState(0);
 
+  const TEMPLATE_PHOTOS: Partial<Record<PhotoCategoryKey, string>> = {
+    van_overview: "/templates/van_overview.jpeg",
+    vin_plate: "/templates/vin_plate.jpeg",
+    vin_windshield: "/templates/vin_windshield.jpeg",
+    interior: "/templates/interior.jpeg",
+    cargo: "/templates/cargo.jpeg",
+    documents: "/templates/doc_0.jpeg",
+  };
+
   function validateField(name: string, value: string): string {
     if (name === "full_name") {
       if (!value.trim()) return t.required;
