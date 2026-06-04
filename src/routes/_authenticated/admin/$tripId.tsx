@@ -465,12 +465,12 @@ function PhotoCard({
   const { t } = useLanguage();
   return (
     <div
-      className={`bg-card border rounded-xl overflow-hidden ${
+      className={`bg-card rounded-xl overflow-hidden ${
         photo.status === "rejected"
-          ? "border-destructive"
+          ? "border-2 border-destructive"
           : isResubmitted && photo.status === "pending"
-          ? "border-orange-400"
-          : "border-border"
+          ? "border-2 border-orange-400"
+          : "border border-border"
       }`}
     >
       {photo.url && (
