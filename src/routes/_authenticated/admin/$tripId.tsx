@@ -40,6 +40,7 @@ type Photo = {
   storage_path: string;
   status: "pending" | "approved" | "rejected";
   comment: string | null;
+  vin_index: number;
   url?: string;
 };
 
@@ -70,7 +71,7 @@ function TripDetailPage() {
 
     const { data: ph } = await supabase
       .from("trip_photos")
-      .select("id,category,storage_path,status,comment")
+      .select("id,category,storage_path,status,comment,vin_index")
       .eq("trip_id", tripId)
       .order("created_at", { ascending: true });
 
@@ -174,7 +175,6 @@ function TripDetailPage() {
     }
   }
 
-  const photosByCat = (cat: PhotoCategoryKey) => photos.filter((p) => p.category === cat);
   const editable = trip.status !== "approved";
   const isResubmitTrip = trip.previous_data !== null && trip.status === "pending";
 
