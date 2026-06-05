@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ChevronRight, Clock, Check, RotateCcw } from "lucide-react";
+import { ChevronRight, Clock, Check, RotateCcw, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminListPage,
@@ -112,6 +112,14 @@ function AdminListPage() {
           className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-secondary"
         >
           📊
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/admin/settings" })}
+          className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-secondary flex items-center"
+          title="Налаштування"
+        >
+          <Settings className="size-4" />
         </button>
       </div>
 
