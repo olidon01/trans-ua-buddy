@@ -21,7 +21,7 @@ import {
   Plus, X, Upload, Camera, Check, Clock, AlertTriangle, Loader2, ChevronDown,
 } from "lucide-react";
 import { z } from "zod";
-import { getBotUsername } from "@/lib/notifications.functions";
+
 
 export const Route = createFileRoute("/_authenticated/driver")({
   component: DriverPage,
@@ -307,7 +307,7 @@ function DriverForm({
     telegram_notifications: true,
     telegram_username: "",
   });
-  const [tgBotUsername, setTgBotUsername] = useState<string>("");
+  const tgBotUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "";
   const [telegramConnected, setTelegramConnected] = useState<boolean | null>(null);
   const [photos, setPhotos] = useState<Record<number, Record<PhotoCategoryKey, File[]>>>({
     0: emptyCarPhotos(),
@@ -384,12 +384,6 @@ function DriverForm({
           telegram_username: data.telegram_username ?? "",
         });
         setTelegramConnected(!!data.telegram_chat_id);
-      }
-      try {
-        const res = await getBotUsername();
-        setTgBotUsername(res.username);
-      } catch (e) {
-        console.error("getBotUsername failed", e);
       }
     })();
   }, [user?.id]);
