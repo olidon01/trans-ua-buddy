@@ -201,7 +201,7 @@ function WaitingScreen({ tripId }: { tripId: string }) {
                         <div key={vi} className="space-y-3">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm px-2 py-0.5 rounded bg-secondary">{vin}</span>
-                            <span className="text-xs text-muted-foreground">Авто {vi + 1}</span>
+                            <span className="text-xs text-muted-foreground">{t.carTab} {vi + 1}</span>
                           </div>
                           {PHOTO_CATEGORIES.map((c) => {
                             const catPhotos = vinPhotos.filter((p) => p.category === c.key);
@@ -971,7 +971,7 @@ function DriverForm({
                       : "bg-secondary border-transparent"
                   }`}>
                   {allPhotosReady && <Check className="size-3.5" />}
-                  Авто {i + 1}{vin.length === 4 ? ` · ${vin}` : ""}
+                  {t.carTab} {i + 1}{vin.length === 4 ? ` · ${vin}` : ""}
                 </button>
               );
             })}
@@ -986,14 +986,14 @@ function DriverForm({
               <div className="flex-1">
                 {isResubmit && activeCarIndex < (originalData?.vin_last4?.length ?? 0) && !rejectedVinIndices.includes(activeCarIndex) ? (
                   <div>
-                    <div className="text-xs text-muted-foreground mb-1">Останні 4 цифри VIN</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t.vinLast4}</div>
                     <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted text-muted-foreground">
                       {form.vin_last4[activeCarIndex] || "—"}
                     </div>
                   </div>
                 ) : (
                   <>
-                    <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">{t.vinLast4}</Label>
                     <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
                       value={form.vin_last4[activeCarIndex] ?? ""}
                       onChange={(e) => setVin(activeCarIndex, e.target.value)}
