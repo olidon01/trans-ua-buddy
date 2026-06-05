@@ -134,10 +134,6 @@ function TripDetailPage() {
 
   async function sendBack() {
     const rejectedIds = photos.filter((p) => p.status === "rejected").map((p) => p.id);
-    if (!rejectedIds.length && rejectedVins.size === 0) {
-      toast.error(t.markRejectedFirst);
-      return;
-    }
     setBusy(true);
     try {
       // Update each rejected photo with its comment
