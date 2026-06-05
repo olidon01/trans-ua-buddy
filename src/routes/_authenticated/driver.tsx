@@ -893,16 +893,16 @@ function DriverForm({
                 <p className="text-xs text-muted-foreground">
                   {tgBotUsername ? (
                     <>
-                      Щоб отримувати повідомлення —{" "}
+                      {t.tgHintOpen}{" "}
                       <a
                         href={`https://t.me/${tgBotUsername}`}
                         target="_blank"
                         rel="noreferrer"
                         className="text-primary underline font-medium"
                       >
-                        відкрийте бота
+                        {t.tgHintOpenBot}
                       </a>{" "}
-                      та натисніть /start.
+                      {t.tgHintStart}
                     </>
                   ) : (
                     t.telegramHint
@@ -916,15 +916,15 @@ function DriverForm({
                       <span className="text-orange-700 dark:text-orange-400">
                         {tgBotUsername ? (
                           <>
-                            Telegram ще не підʼєднано. Перейдіть до{" "}
+                            {t.tgWarnNotConnected}{" "}
                             <a href={`https://t.me/${tgBotUsername}`} target="_blank" rel="noreferrer"
                                className="underline font-medium text-orange-700 dark:text-orange-400">
-                              бота
+                              {t.tgWarnBot}
                             </a>{" "}
-                            та натисніть /start, щоб отримувати повідомлення.
+                            {t.tgWarnStart}
                           </>
                         ) : (
-                          <>Telegram ще не підʼєднано. Ви не отримаєте повідомлення, поки не натиснете /start у боті.</>
+                          <>{t.tgWarnNoUsername}</>
                         )}
                       </span>
                     </div>
