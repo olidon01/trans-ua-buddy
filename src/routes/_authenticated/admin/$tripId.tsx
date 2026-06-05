@@ -48,6 +48,7 @@ function TripDetailPage() {
   const { tripId } = Route.useParams();
   const { roles, loading: authLoading } = useAuth();
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const navigate = useNavigate();
   const notify = useServerFn(notifyTrip);
   const [trip, setTrip] = useState<Trip | null>(null);
