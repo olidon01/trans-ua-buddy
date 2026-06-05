@@ -244,15 +244,17 @@ export const translations = {
 export type Language = keyof typeof translations;
 export type Translations = typeof translations.uk;
 
-export const PHOTO_CATEGORIES = [
-  { key: "van_corners" as const, count: 4, subSlots: ["Спереду зліва", "Спереду справа", "Ззаду зліва", "Ззаду справа"] },
-  { key: "vin_plate" as const, count: 1 },
-  { key: "vin_windshield" as const, count: 1 },
-  { key: "van_overview" as const, count: 1 },
-  { key: "interior" as const, count: 1 },
-  { key: "cargo" as const, count: 1 },
-  { key: "documents" as const, count: 3, subSlots: ["Документ 1", "Документ 2", "Документ 3"] },
-];
+export function getPhotoCategories(t: Translations) {
+  return [
+    { key: "van_overview" as const, count: 1 },
+    { key: "van_corners" as const, count: 4, subSlots: [t.cornerFrontLeft, t.cornerFrontRight, t.cornerRearLeft, t.cornerRearRight] },
+    { key: "vin_plate" as const, count: 1 },
+    { key: "vin_windshield" as const, count: 1 },
+    { key: "interior" as const, count: 1 },
+    { key: "cargo" as const, count: 1 },
+    { key: "documents" as const, count: 3, subSlots: [t.docSlot1, t.docSlot2, t.docSlot3] },
+  ] as const;
+}
 
 export type PhotoCategoryKey = (typeof PHOTO_CATEGORIES)[number]["key"];
 
