@@ -105,7 +105,6 @@ export const translations = {
     camera: "Камера",
     gallery: "Галерея",
     vinLast4: "Останні 4 цифри VIN",
-    addVin: "+ Додати авто",
     carTab: "Авто",
     borders: [
       "Дорогуськ — Ягодин",
@@ -229,7 +228,6 @@ export const translations = {
     camera: "Kamera",
     gallery: "Galeria",
     vinLast4: "Ostatnie 4 cyfry VIN",
-    addVin: "+ Dodaj auto",
     carTab: "Auto",
     borders: [
       "Dorohusk — Jahodyn",
