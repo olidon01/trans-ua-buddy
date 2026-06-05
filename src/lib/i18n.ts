@@ -244,19 +244,32 @@ export const translations = {
 export type Language = keyof typeof translations;
 export type Translations = typeof translations.uk;
 
-export function getPhotoCategories(t: Translations) {
-  return [
-    { key: "van_overview" as const, count: 1 },
-    { key: "van_corners" as const, count: 4, subSlots: [t.cornerFrontLeft, t.cornerFrontRight, t.cornerRearLeft, t.cornerRearRight] },
-    { key: "vin_plate" as const, count: 1 },
-    { key: "vin_windshield" as const, count: 1 },
-    { key: "interior" as const, count: 1 },
-    { key: "cargo" as const, count: 1 },
-    { key: "documents" as const, count: 3, subSlots: [t.docSlot1, t.docSlot2, t.docSlot3] },
-  ] as const;
-}
+export type PhotoCategoryKey =
+  | "van_overview"
+  | "van_corners"
+  | "vin_plate"
+  | "vin_windshield"
+  | "interior"
+  | "cargo"
+  | "documents";
 
-export type PhotoCategoryKey = ReturnType<typeof getPhotoCategories>[number]["key"];
+export type PhotoCategory = {
+  key: PhotoCategoryKey;
+  count: number;
+  subSlots?: readonly string[];
+};
+
+export function getPhotoCategories(t: Translations): readonly PhotoCategory[] {
+  return [
+    { key: "van_overview", count: 1 },
+    { key: "van_corners", count: 4, subSlots: [t.cornerFrontLeft, t.cornerFrontRight, t.cornerRearLeft, t.cornerRearRight] },
+    { key: "vin_plate", count: 1 },
+    { key: "vin_windshield", count: 1 },
+    { key: "interior", count: 1 },
+    { key: "cargo", count: 1 },
+    { key: "documents", count: 3, subSlots: [t.docSlot1, t.docSlot2, t.docSlot3] },
+  ];
+}
 
 export function getCategoryLabel(t: Translations, key: PhotoCategoryKey): string {
   return t[`cat_${key}` as `cat_${PhotoCategoryKey}`];
