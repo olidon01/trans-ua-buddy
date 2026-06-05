@@ -179,16 +179,29 @@ function LoginPage() {
                       {t.firstTimeHint}
                     </p>
                 </form>
-                <div className="mt-4 pt-4 border-t border-border">
-                  <button type="button"
+                <div className="mt-5 pt-5 border-t border-border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">або</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <button
+                    type="button"
                     onClick={() => setActiveTab(activeTab === "magic" ? "password" : "magic")}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground text-center">
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/30 text-primary font-medium text-sm hover:bg-primary/5 transition"
+                  >
+                    <Mail className="size-4" />
                     {t.loginTabMagic}
                   </button>
                   {activeTab === "magic" && (
                     <form onSubmit={handleSubmit} className="mt-3 space-y-3">
-                      <Input type="email" required placeholder={t.emailPlaceholder}
-                        value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <Input
+                        type="email"
+                        required
+                        placeholder={t.emailPlaceholder}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                       <Button type="submit" variant="outline" className="w-full" disabled={loading}>
                         {loading ? t.loading : t.sendMagicLink}
                       </Button>
