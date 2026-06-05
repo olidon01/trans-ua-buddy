@@ -69,7 +69,7 @@ function LoginPage() {
 
   async function handleForgotPassword() {
     if (!email.trim()) {
-      toast.error("Введіть email вище");
+      toast.error(t.loginEnterEmail);
       return;
     }
     setLoading(true);
@@ -81,7 +81,7 @@ function LoginPage() {
       toast.error(error.message);
     } else {
       setResetSent(true);
-      toast.success("Лист для відновлення надіслано");
+      toast.success(t.loginResetSuccess);
     }
   }
 
@@ -123,7 +123,7 @@ function LoginPage() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    ✉ Посилання на пошту
+                    {t.loginTabMagic}
                   </button>
                   <button
                     type="button"
@@ -134,7 +134,7 @@ function LoginPage() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    🔒 Пароль
+                    {t.loginTabPassword}
                   </button>
                 </div>
                 {activeTab === "magic" ? (
@@ -170,7 +170,7 @@ function LoginPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Пароль</Label>
+                      <Label htmlFor="password">{t.loginPassword}</Label>
                       <div className="relative">
                         <Input
                           id="password"
@@ -199,14 +199,14 @@ function LoginPage() {
                         onChange={(e) => setRememberMe(e.target.checked)}
                         className="rounded border-border"
                       />
-                      Запам'ятати мене
+                      {t.loginRememberMe}
                     </label>
                     <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                      {loading ? t.loading : "Увійти"}
+                      {loading ? t.loading : t.loginSignIn}
                     </Button>
                     <div className="text-center">
                       {resetSent ? (
-                        <span className="text-sm text-success">Лист надіслано ✓</span>
+                        <span className="text-sm text-success">{t.loginResetSent}</span>
                       ) : (
                         <button
                           type="button"
@@ -214,7 +214,7 @@ function LoginPage() {
                           disabled={loading}
                           className="text-sm text-muted-foreground hover:text-foreground underline"
                         >
-                          Забули пароль?
+                          {t.loginForgotPassword}
                         </button>
                       )}
                     </div>
