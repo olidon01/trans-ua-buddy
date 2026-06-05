@@ -256,7 +256,7 @@ export function getPhotoCategories(t: Translations) {
   ] as const;
 }
 
-export type PhotoCategoryKey = (typeof PHOTO_CATEGORIES)[number]["key"];
+export type PhotoCategoryKey = ReturnType<typeof getPhotoCategories>[number]["key"];
 
 export function getCategoryLabel(t: Translations, key: PhotoCategoryKey): string {
   return t[`cat_${key}` as `cat_${PhotoCategoryKey}`];
