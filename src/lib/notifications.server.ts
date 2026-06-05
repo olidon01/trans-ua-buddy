@@ -6,10 +6,6 @@ export function appUrl(): string {
   return process.env.APP_URL ?? "https://trans-ua-buddy.dr-olidon01.workers.dev";
 }
 
-export function botUsername(): string {
-  return process.env.TELEGRAM_BOT_USERNAME ?? "";
-}
-
 const CATEGORY_LABELS: Record<string, string> = {
   van_overview: "Огляд фургона",
   van_corners: "Кути фургона",
