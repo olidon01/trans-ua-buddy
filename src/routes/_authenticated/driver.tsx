@@ -1191,7 +1191,28 @@ function PhotoSlot({
       )}
       {subSlots ? (
         <div className="space-y-2">
-          {subSlots.map((slotName, i) => {
+          {(() => {
+            const editableCount =
+              rejectedItems && rejectedItems.length > 0 ? rejectedItems.length : subSlots.length;
+            return subSlots.map((slotName, i) => {
+            if (i >= editableCount) {
+              const approved = approvedItems?.[i - editableCount];
+              return (
+                <div key={i} className="rounded-lg border border-green-500/40 bg-green-500/5 p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">{slotName}</span>
+                    <Check className="size-3.5 text-green-600" />
+                  </div>
+                  {approved?.signed_url && (
+                    <img
+                      src={approved.signed_url}
+                      alt=""
+                      className="w-full aspect-video object-cover rounded"
+                    />
+                  )}
+                </div>
+              );
+            }
             const subId = `${id}-sub-${i}`;
             const hasFile = !!files[i];
             const subTemplate =
@@ -1243,7 +1264,8 @@ function PhotoSlot({
                 </div>
               </div>
             );
-          })}
+            });
+          })()}
         </div>
       ) : (
       <>
