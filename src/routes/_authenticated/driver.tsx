@@ -291,6 +291,7 @@ function DriverForm({
 }) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const [form, setForm] = useState<FormState>({
     company_name: "",
     car_number: "",
