@@ -104,6 +104,7 @@ export type Database = {
           passport_number: string
           phone: string
           previous_data: Json | null
+          rejected_vins: number[] | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["trip_status"]
@@ -123,6 +124,7 @@ export type Database = {
           passport_number: string
           phone: string
           previous_data?: Json | null
+          rejected_vins?: number[] | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
@@ -142,6 +144,7 @@ export type Database = {
           passport_number?: string
           phone?: string
           previous_data?: Json | null
+          rejected_vins?: number[] | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
