@@ -182,15 +182,14 @@ function LoginPage() {
                 <div className="mt-5 pt-5 border-t border-border">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">або</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{t.or}</span>
                     <div className="flex-1 h-px bg-border" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab(activeTab === "magic" ? "password" : "magic")}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/30 text-primary font-medium text-sm hover:bg-primary/5 transition"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-primary/10 border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/20 transition"
                   >
-                    <Mail className="size-4" />
                     {t.loginTabMagic}
                   </button>
                   {activeTab === "magic" && (
