@@ -307,7 +307,7 @@ function DriverForm({
     telegram_notifications: true,
     telegram_username: "",
   });
-  const tgBotUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "";
+  const tgBotUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "vanlink_notify_bot";
   const [telegramConnected, setTelegramConnected] = useState<boolean | null>(null);
   const [photos, setPhotos] = useState<Record<number, Record<PhotoCategoryKey, File[]>>>({
     0: emptyCarPhotos(),
