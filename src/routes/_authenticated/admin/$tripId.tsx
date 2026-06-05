@@ -57,6 +57,7 @@ function TripDetailPage() {
   const [busy, setBusy] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editDraft, setEditDraft] = useState<Partial<Trip>>({});
+  const [rejectedVins, setRejectedVins] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     void load();
@@ -132,7 +133,7 @@ function TripDetailPage() {
 
   async function sendBack() {
     const rejectedIds = photos.filter((p) => p.status === "rejected").map((p) => p.id);
-    if (!rejectedIds.length) {
+    if (!rejectedIds.length && rejectedVins.size === 0) {
       toast.error(t.markRejectedFirst);
       return;
     }
@@ -161,6 +162,12 @@ function TripDetailPage() {
           reviewed_at: new Date().toISOString(),
         })
         .eq("id", trip!.id);
+      if (rejectedVins.size > 0) {
+        await supabase
+          .from("trips")
+          .update({ rejected_vins: Array.from(rejectedVins) })
+          .eq("id", trip!.id);
+      }
       try {
         await notify({ data: { tripId: trip!.id, kind: "rejected" } });
       } catch (e) {
@@ -293,11 +300,30 @@ function TripDetailPage() {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {trip.vin_last4.map((v, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center font-mono text-sm px-2 py-0.5 rounded bg-secondary"
-              >
-                {v}
+              <span key={i} className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center font-mono text-sm px-2 py-0.5 rounded bg-secondary">
+                  {v}
+                </span>
+                {editable && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setRejectedVins((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(i)) next.delete(i);
+                        else next.add(i);
+                        return next;
+                      })
+                    }
+                    className={`text-xs px-2 py-0.5 rounded border ${
+                      rejectedVins.has(i)
+                        ? "border-destructive text-destructive bg-destructive/10"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {rejectedVins.has(i) ? "VIN відхилено" : "Відхилити VIN"}
+                  </button>
+                )}
               </span>
             ))}
           </div>
