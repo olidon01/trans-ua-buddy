@@ -493,15 +493,15 @@ function DriverForm({
   }
   function removeVin(i: number) {
     setForm((f) => ({ ...f, vin_last4: f.vin_last4.filter((_, idx) => idx !== i) }));
-    setPhotos((p) => {
-      const keys = Object.keys(p).map(Number).sort((a, b) => a - b);
-      const result: Record<number, Record<PhotoCategoryKey, File[]>> = {};
-      let newIdx = 0;
-      for (const j of keys) {
-        if (j === i) continue;
-        result[newIdx++] = p[j] ?? emptyCarPhotos();
+    setPhotos((prev) => {
+      const next: Record<number, Record<PhotoCategoryKey, File[]>> = {};
+      for (const [key, val] of Object.entries(prev)) {
+        const idx = parseInt(key);
+        if (idx === i) continue;
+        if (idx > i) next[idx - 1] = val;
+        else next[idx] = val;
       }
-      return result;
+      return next;
     });
   }
 
@@ -1002,7 +1002,7 @@ function DriverForm({
                   </>
                 )}
               </div>
-              {form.vin_last4.length > 1 && (
+              {form.vin_last4.length > 1 && (!isResubmit || activeCarIndex >= (originalData?.vin_last4?.length ?? 0)) && (
                 <Button type="button" variant="ghost" size="icon" className="mt-5"
                   onClick={() => { removeVin(activeCarIndex); setActiveCarIndex((i) => Math.max(0, i - 1)); }}>
                   <X className="size-4" />
