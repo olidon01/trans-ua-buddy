@@ -20,7 +20,7 @@ export const translations = {
     phone: "Телефон",
     borderCrossing: "Пункт перетину кордону",
     vinList: "Останні 4 цифри VIN кожного авто",
-    addVin: "Додати VIN",
+    addVin: "+ Додати авто",
     removeVin: "Видалити",
     photos: "Фотографії",
     uploadPhotos: "Завантажити фото",
@@ -94,6 +94,18 @@ export const translations = {
     loginResetSent: "Лист надіслано ✓",
     loginEnterEmail: "Введіть email вище",
     loginResetSuccess: "Лист для відновлення надіслано",
+    cornerFrontLeft: "Спереду зліва",
+    cornerFrontRight: "Спереду справа",
+    cornerRearLeft: "Ззаду зліва",
+    cornerRearRight: "Ззаду справа",
+    docSlot1: "Документ 1",
+    docSlot2: "Документ 2",
+    docSlot3: "Документ 3",
+    photoExample: "Приклад фото",
+    camera: "Камера",
+    gallery: "Галерея",
+    vinLast4: "Останні 4 цифри VIN",
+    carTab: "Авто",
     borders: [
       "Дорогуськ — Ягодин",
       "Гребенне — Рава-Руська",
@@ -125,7 +137,7 @@ export const translations = {
     phone: "Telefon",
     borderCrossing: "Przejście graniczne",
     vinList: "Ostatnie 4 cyfry VIN każdego auta",
-    addVin: "Dodaj VIN",
+    addVin: "+ Dodaj auto",
     removeVin: "Usuń",
     photos: "Zdjęcia",
     uploadPhotos: "Dodaj zdjęcie",
@@ -205,6 +217,18 @@ export const translations = {
     loginResetSent: "Email wysłany ✓",
     loginEnterEmail: "Wprowadź email powyżej",
     loginResetSuccess: "Link do resetowania hasła wysłany",
+    cornerFrontLeft: "Przód lewy",
+    cornerFrontRight: "Przód prawy",
+    cornerRearLeft: "Tył lewy",
+    cornerRearRight: "Tył prawy",
+    docSlot1: "Dokument 1",
+    docSlot2: "Dokument 2",
+    docSlot3: "Dokument 3",
+    photoExample: "Przykładowe zdjęcie",
+    camera: "Kamera",
+    gallery: "Galeria",
+    vinLast4: "Ostatnie 4 cyfry VIN",
+    carTab: "Auto",
     borders: [
       "Dorohusk — Jahodyn",
       "Hrebenne — Rawa Ruska",
@@ -220,17 +244,32 @@ export const translations = {
 export type Language = keyof typeof translations;
 export type Translations = typeof translations.uk;
 
-export const PHOTO_CATEGORIES = [
-  { key: "van_corners" as const, count: 4, subSlots: ["Спереду зліва", "Спереду справа", "Ззаду зліва", "Ззаду справа"] },
-  { key: "vin_plate" as const, count: 1 },
-  { key: "vin_windshield" as const, count: 1 },
-  { key: "van_overview" as const, count: 1 },
-  { key: "interior" as const, count: 1 },
-  { key: "cargo" as const, count: 1 },
-  { key: "documents" as const, count: 3, subSlots: ["Документ 1", "Документ 2", "Документ 3"] },
-];
+export type PhotoCategoryKey =
+  | "van_overview"
+  | "van_corners"
+  | "vin_plate"
+  | "vin_windshield"
+  | "interior"
+  | "cargo"
+  | "documents";
 
-export type PhotoCategoryKey = (typeof PHOTO_CATEGORIES)[number]["key"];
+export type PhotoCategory = {
+  key: PhotoCategoryKey;
+  count: number;
+  subSlots?: readonly string[];
+};
+
+export function getPhotoCategories(t: Translations): readonly PhotoCategory[] {
+  return [
+    { key: "van_overview", count: 1 },
+    { key: "van_corners", count: 4, subSlots: [t.cornerFrontLeft, t.cornerFrontRight, t.cornerRearLeft, t.cornerRearRight] },
+    { key: "vin_plate", count: 1 },
+    { key: "vin_windshield", count: 1 },
+    { key: "interior", count: 1 },
+    { key: "cargo", count: 1 },
+    { key: "documents", count: 3, subSlots: [t.docSlot1, t.docSlot2, t.docSlot3] },
+  ];
+}
 
 export function getCategoryLabel(t: Translations, key: PhotoCategoryKey): string {
   return t[`cat_${key}` as `cat_${PhotoCategoryKey}`];

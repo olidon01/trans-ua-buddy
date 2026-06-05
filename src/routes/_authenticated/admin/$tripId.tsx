@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { PHOTO_CATEGORIES, getCategoryLabel } from "@/lib/i18n";
+import { getPhotoCategories, getCategoryLabel } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,6 +48,7 @@ function TripDetailPage() {
   const { tripId } = Route.useParams();
   const { roles, loading: authLoading } = useAuth();
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const navigate = useNavigate();
   const notify = useServerFn(notifyTrip);
   const [trip, setTrip] = useState<Trip | null>(null);

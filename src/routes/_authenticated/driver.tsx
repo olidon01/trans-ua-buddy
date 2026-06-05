@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
+import { getPhotoCategories, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,6 +108,7 @@ type SubmittedPhoto = {
 
 function WaitingScreen({ tripId }: { tripId: string }) {
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const [trip, setTrip] = useState<FullTrip | null>(null);
   const [photos, setPhotos] = useState<SubmittedPhoto[]>([]);
   const [showData, setShowData] = useState(false);
@@ -200,7 +201,7 @@ function WaitingScreen({ tripId }: { tripId: string }) {
                         <div key={vi} className="space-y-3">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm px-2 py-0.5 rounded bg-secondary">{vin}</span>
-                            <span className="text-xs text-muted-foreground">Авто {vi + 1}</span>
+                            <span className="text-xs text-muted-foreground">{t.carTab} {vi + 1}</span>
                           </div>
                           {PHOTO_CATEGORIES.map((c) => {
                             const catPhotos = vinPhotos.filter((p) => p.category === c.key);
@@ -290,6 +291,7 @@ function DriverForm({
 }) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const [form, setForm] = useState<FormState>({
     company_name: "",
     car_number: "",
@@ -529,7 +531,7 @@ function DriverForm({
 
     for (let i = 0; i < form.vin_last4.length; i++) {
       if (!form.vin_last4[i] || !/^\d{4}$/.test(form.vin_last4[i])) {
-        toast.error(`Авто ${i + 1}: введіть останні 4 цифри VIN`);
+        toast.error(`${t.carTab} ${i + 1}: ${t.vinLast4}`);
         return;
       }
     }
@@ -562,7 +564,7 @@ function DriverForm({
       for (let vi = 0; vi < form.vin_last4.length; vi++) {
         for (const c of PHOTO_CATEGORIES) {
           if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
-            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            toast.error(`${t.carTab} ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
             return;
           }
         }
@@ -576,7 +578,7 @@ function DriverForm({
         const needed = rejected.filter(x => x.vin_index === r.vin_index && x.category === r.category).length;
         const have = photos[r.vin_index]?.[r.category as PhotoCategoryKey]?.length ?? 0;
         if (have !== needed) {
-          toast.error(`Авто ${r.vin_index + 1}: ${getCategoryLabel(t, r.category as PhotoCategoryKey)}: ${needed} ${t.photoCountError}`);
+          toast.error(`${t.carTab} ${r.vin_index + 1}: ${getCategoryLabel(t, r.category as PhotoCategoryKey)}: ${needed} ${t.photoCountError}`);
           return;
         }
       }
@@ -585,7 +587,7 @@ function DriverForm({
       for (let vi = originalVinCount; vi < form.vin_last4.length; vi++) {
         for (const c of PHOTO_CATEGORIES) {
           if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
-            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            toast.error(`${t.carTab} ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
             return;
           }
         }
@@ -969,7 +971,7 @@ function DriverForm({
                       : "bg-secondary border-transparent"
                   }`}>
                   {allPhotosReady && <Check className="size-3.5" />}
-                  Авто {i + 1}{vin.length === 4 ? ` · ${vin}` : ""}
+                  {t.carTab} {i + 1}{vin.length === 4 ? ` · ${vin}` : ""}
                 </button>
               );
             })}
@@ -984,14 +986,14 @@ function DriverForm({
               <div className="flex-1">
                 {isResubmit && activeCarIndex < (originalData?.vin_last4?.length ?? 0) && !rejectedVinIndices.includes(activeCarIndex) ? (
                   <div>
-                    <div className="text-xs text-muted-foreground mb-1">Останні 4 цифри VIN</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t.vinLast4}</div>
                     <div className="font-mono text-lg tracking-widest px-3 py-2 rounded-md bg-muted text-muted-foreground">
                       {form.vin_last4[activeCarIndex] || "—"}
                     </div>
                   </div>
                 ) : (
                   <>
-                    <Label className="text-xs text-muted-foreground mb-1 block">Останні 4 цифри VIN</Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">{t.vinLast4}</Label>
                     <Input inputMode="numeric" pattern="\d{4}" maxLength={4} placeholder="0000"
                       value={form.vin_last4[activeCarIndex] ?? ""}
                       onChange={(e) => setVin(activeCarIndex, e.target.value)}
@@ -1150,9 +1152,9 @@ function PhotoSlot({
       {templateSrc && !subSlots && (
         <details className="mb-2">
           <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
-            📷 Приклад фото
+            📷 {t.photoExample}
           </summary>
-          <img src={templateSrc} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+          <img src={templateSrc} alt={t.photoExample} className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
         </details>
       )}
       {approvedItems && approvedItems.length > 0 && (
@@ -1227,9 +1229,9 @@ function PhotoSlot({
                 {subTemplate && (
                   <details className="mb-1.5">
                     <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
-                      📷 Приклад фото
+                      📷 {t.photoExample}
                     </summary>
-                    <img src={subTemplate} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+                    <img src={subTemplate} alt={t.photoExample} className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
                   </details>
                 )}
                 {hasFile && (
@@ -1253,10 +1255,10 @@ function PhotoSlot({
                   }} />
                 <div className="flex gap-1.5">
                   <label htmlFor={`${subId}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
-                    <Camera className="size-3.5" /> Камера
+                    <Camera className="size-3.5" /> {t.camera}
                   </label>
                   <label htmlFor={`${subId}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
-                    <Upload className="size-3.5" /> Галерея
+                    <Upload className="size-3.5" /> {t.gallery}
                   </label>
                 </div>
               </div>
@@ -1285,10 +1287,10 @@ function PhotoSlot({
       />
       <div className="flex gap-2">
         <label htmlFor={`${id}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
-          <Camera className="size-4" /> Камера
+          <Camera className="size-4" /> {t.camera}
         </label>
         <label htmlFor={`${id}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
-          <Upload className="size-4" /> Галерея
+          <Upload className="size-4" /> {t.gallery}
         </label>
       </div>
       {files.length > 0 && (
