@@ -20,7 +20,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"magic" | "password">("magic");
+  const [activeTab, setActiveTab] = useState<"magic" | "password">("password");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [resetSent, setResetSent] = useState(false);
@@ -113,50 +113,7 @@ function LoginPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-2 mb-4 p-1 bg-muted rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("magic")}
-                    className={`text-sm font-medium py-2 px-4 rounded-md transition ${
-                      activeTab === "magic"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.loginTabMagic}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("password")}
-                    className={`text-sm font-medium py-2 px-4 rounded-md transition ${
-                      activeTab === "password"
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.loginTabPassword}
-                  </button>
-                </div>
-                {activeTab === "magic" ? (
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">{t.emailLabel}</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        required
-                        autoComplete="email"
-                        placeholder={t.emailPlaceholder}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                      {loading ? t.loading : t.sendMagicLink}
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <form onSubmit={handlePasswordSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email-pw">{t.emailLabel}</Label>
                       <Input
@@ -218,8 +175,26 @@ function LoginPage() {
                         </button>
                       )}
                     </div>
-                  </form>
-                )}
+                    <p className="text-xs text-center text-muted-foreground mt-1">
+                      {t.firstTimeHint}
+                    </p>
+                </form>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <button type="button"
+                    onClick={() => setActiveTab(activeTab === "magic" ? "password" : "magic")}
+                    className="w-full text-sm text-muted-foreground hover:text-foreground text-center">
+                    {t.loginTabMagic}
+                  </button>
+                  {activeTab === "magic" && (
+                    <form onSubmit={handleSubmit} className="mt-3 space-y-3">
+                      <Input type="email" required placeholder={t.emailPlaceholder}
+                        value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <Button type="submit" variant="outline" className="w-full" disabled={loading}>
+                        {loading ? t.loading : t.sendMagicLink}
+                      </Button>
+                    </form>
+                  )}
+                </div>
               </>
             )}
           </div>
