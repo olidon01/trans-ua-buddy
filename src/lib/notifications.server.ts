@@ -161,6 +161,56 @@ export function renderRejectedTelegram(opts: {
   );
 }
 
+export function renderAdminNewTripEmail(driverName: string, tripId: string, adminLink: string): string {
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+      <h2 style="margin:0 0 12px">Новий рейс очікує перевірки 🚐</h2>
+      <p>Водій <b>${escapeHtml(driverName)}</b> надіслав новий рейс на перевірку.</p>
+      <p style="color:#666;font-size:12px">ID: ${escapeHtml(tripId)}</p>
+      <p style="margin-top:24px">
+        <a href="${adminLink}"
+           style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Переглянути рейс →
+        </a>
+      </p>
+      <p style="color:#666;font-size:12px;margin-top:32px">VanLink Admin</p>
+    </div>`;
+}
+
+export function renderAdminResubmitEmail(driverName: string, tripId: string, adminLink: string): string {
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+      <h2 style="margin:0 0 12px">Виправлений рейс 🔄</h2>
+      <p>Водій <b>${escapeHtml(driverName)}</b> надіслав виправлений рейс на повторну перевірку.</p>
+      <p style="color:#666;font-size:12px">ID: ${escapeHtml(tripId)}</p>
+      <p style="margin-top:24px">
+        <a href="${adminLink}"
+           style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px">
+          Переглянути рейс →
+        </a>
+      </p>
+      <p style="color:#666;font-size:12px;margin-top:32px">VanLink Admin</p>
+    </div>`;
+}
+
+export function renderAdminNewTripTelegram(driverName: string, adminLink: string): string {
+  return (
+    `🚐 <b>Новий рейс</b>\n` +
+    `Водій: ${escapeHtml(driverName)}\n\n` +
+    `👉 <a href="${adminLink}">Переглянути</a>`
+  );
+}
+
+export function renderAdminResubmitTelegram(driverName: string, adminLink: string): string {
+  return (
+    `🔄 <b>Виправлений рейс</b>\n` +
+    `Водій: ${escapeHtml(driverName)}\n\n` +
+    `👉 <a href="${adminLink}">Переглянути</a>`
+  );
+}
+
 function escapeHtml(s: string) {
   return s
     .replace(/&/g, "&amp;")

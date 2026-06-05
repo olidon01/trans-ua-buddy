@@ -8,6 +8,10 @@ import {
   renderApprovedTelegram,
   renderRejectedEmail,
   renderRejectedTelegram,
+  renderAdminNewTripEmail,
+  renderAdminResubmitEmail,
+  renderAdminNewTripTelegram,
+  renderAdminResubmitTelegram,
   sendResendEmail,
   sendTelegramMessage,
 } from "./notifications.server";
@@ -134,4 +138,68 @@ export const notifyTrip = createServerFn({ method: "POST" })
 
     console.log("[notifyTrip] result:", result);
     return { sent: result };
+  });
+
+const AdminInputSchema = z.object({
+  tripId: z.string().uuid(),
+  kind: z.enum(["new_trip", "resubmit"]),
+  driverName: z.string().max(200),
+});
+
+export const notifyAdmin = createServerFn({ method: "POST" })
+  .inputValidator((input) => AdminInputSchema.parse(input))
+  .handler(async ({ data }) => {
+    const admin = adminClient();
+    const { data: adminRoles } = await admin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    if (!adminRoles?.length) return { sent: [] };
+
+    const adminIds = adminRoles.map((r) => r.user_id);
+    const { data: adminProfiles } = await admin
+      .from("profiles")
+      .select("email, email_notifications, telegram_notifications, telegram_chat_id")
+      .in("id", adminIds);
+    if (!adminProfiles?.length) return { sent: [] };
+
+    const adminLink = `${appUrl()}/admin/${data.tripId}`;
+    const results: { email: boolean; telegram: boolean }[] = [];
+
+    for (const profile of adminProfiles) {
+      const result = { email: false, telegram: false };
+      if (profile.email_notifications && profile.email) {
+        try {
+          const html =
+            data.kind === "new_trip"
+              ? renderAdminNewTripEmail(data.driverName, data.tripId, adminLink)
+              : renderAdminResubmitEmail(data.driverName, data.tripId, adminLink);
+          await sendResendEmail({
+            to: profile.email,
+            subject:
+              data.kind === "new_trip"
+                ? "VanLink — новий рейс"
+                : "VanLink — виправлений рейс",
+            html,
+          });
+          result.email = true;
+        } catch (e) {
+          console.error("[notifyAdmin] email failed:", e instanceof Error ? e.message : e);
+        }
+      }
+      if (profile.telegram_notifications && profile.telegram_chat_id) {
+        try {
+          const text =
+            data.kind === "new_trip"
+              ? renderAdminNewTripTelegram(data.driverName, adminLink)
+              : renderAdminResubmitTelegram(data.driverName, adminLink);
+          await sendTelegramMessage(profile.telegram_chat_id, text);
+          result.telegram = true;
+        } catch (e) {
+          console.error("[notifyAdmin] telegram failed:", e instanceof Error ? e.message : e);
+        }
+      }
+      results.push(result);
+    }
+    return { sent: results };
   });

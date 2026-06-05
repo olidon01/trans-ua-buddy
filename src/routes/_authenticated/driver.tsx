@@ -21,6 +21,7 @@ import {
   Plus, X, Upload, Camera, Check, Clock, AlertTriangle, Loader2, ChevronDown,
 } from "lucide-react";
 import { z } from "zod";
+import { notifyAdmin } from "@/lib/notifications.functions";
 
 
 export const Route = createFileRoute("/_authenticated/driver")({
@@ -702,6 +703,19 @@ function DriverForm({
       }
 
       toast.success(t.tripSubmitted);
+      try {
+        if (tripId) {
+          await notifyAdmin({
+            data: {
+              tripId,
+              kind: existingTrip ? "resubmit" : "new_trip",
+              driverName: form.full_name || "Водій",
+            },
+          });
+        }
+      } catch (e) {
+        console.error("notifyAdmin failed", e);
+      }
       if (!existingTrip) {
         localStorage.removeItem("vanlink_draft");
       }
