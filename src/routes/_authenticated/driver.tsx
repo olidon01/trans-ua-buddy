@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, isStaff } from "@/hooks/use-auth";
-import { PHOTO_CATEGORIES, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
+import { getPhotoCategories, getCategoryLabel, type PhotoCategoryKey } from "@/lib/i18n";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,6 +108,7 @@ type SubmittedPhoto = {
 
 function WaitingScreen({ tripId }: { tripId: string }) {
   const { t } = useLanguage();
+  const PHOTO_CATEGORIES = getPhotoCategories(t);
   const [trip, setTrip] = useState<FullTrip | null>(null);
   const [photos, setPhotos] = useState<SubmittedPhoto[]>([]);
   const [showData, setShowData] = useState(false);
