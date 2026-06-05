@@ -531,7 +531,7 @@ function DriverForm({
 
     for (let i = 0; i < form.vin_last4.length; i++) {
       if (!form.vin_last4[i] || !/^\d{4}$/.test(form.vin_last4[i])) {
-        toast.error(`Авто ${i + 1}: введіть останні 4 цифри VIN`);
+        toast.error(`${t.carTab} ${i + 1}: ${t.vinLast4}`);
         return;
       }
     }
@@ -564,7 +564,7 @@ function DriverForm({
       for (let vi = 0; vi < form.vin_last4.length; vi++) {
         for (const c of PHOTO_CATEGORIES) {
           if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
-            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            toast.error(`${t.carTab} ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
             return;
           }
         }
@@ -578,7 +578,7 @@ function DriverForm({
         const needed = rejected.filter(x => x.vin_index === r.vin_index && x.category === r.category).length;
         const have = photos[r.vin_index]?.[r.category as PhotoCategoryKey]?.length ?? 0;
         if (have !== needed) {
-          toast.error(`Авто ${r.vin_index + 1}: ${getCategoryLabel(t, r.category as PhotoCategoryKey)}: ${needed} ${t.photoCountError}`);
+          toast.error(`${t.carTab} ${r.vin_index + 1}: ${getCategoryLabel(t, r.category as PhotoCategoryKey)}: ${needed} ${t.photoCountError}`);
           return;
         }
       }
@@ -587,7 +587,7 @@ function DriverForm({
       for (let vi = originalVinCount; vi < form.vin_last4.length; vi++) {
         for (const c of PHOTO_CATEGORIES) {
           if ((photos[vi]?.[c.key]?.length ?? 0) !== c.count) {
-            toast.error(`Авто ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
+            toast.error(`${t.carTab} ${vi + 1}: ${getCategoryLabel(t, c.key)}: ${c.count} ${t.photoCountError}`);
             return;
           }
         }
