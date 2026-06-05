@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 export function appUrl(): string {
-  return "https://trans-ua-buddy.lovable.app";
+  return process.env.APP_URL ?? "https://trans-ua-buddy.dr-olidon01.workers.dev";
 }
 
 export function botUsername(): string {

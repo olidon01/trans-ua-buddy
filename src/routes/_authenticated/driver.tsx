@@ -916,7 +916,18 @@ function DriverForm({
                     <div className="flex items-start gap-2 rounded-lg border border-orange-400/40 bg-orange-400/10 p-2.5 text-xs">
                       <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-orange-500" />
                       <span className="text-orange-700 dark:text-orange-400">
-                        Telegram ще не підʼєднано. Ви не отримаєте повідомлення, поки не натиснете /start у боті.
+                        {tgBotUsername ? (
+                          <>
+                            Telegram ще не підʼєднано. Перейдіть до{" "}
+                            <a href={`https://t.me/${tgBotUsername}`} target="_blank" rel="noreferrer"
+                               className="underline font-medium text-orange-700 dark:text-orange-400">
+                              бота
+                            </a>{" "}
+                            та натисніть /start, щоб отримувати повідомлення.
+                          </>
+                        ) : (
+                          <>Telegram ще не підʼєднано. Ви не отримаєте повідомлення, поки не натиснете /start у боті.</>
+                        )}
                       </span>
                     </div>
                   )}
