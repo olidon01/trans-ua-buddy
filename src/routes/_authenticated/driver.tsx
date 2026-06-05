@@ -1152,9 +1152,9 @@ function PhotoSlot({
       {templateSrc && !subSlots && (
         <details className="mb-2">
           <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
-            📷 Приклад фото
+            📷 {t.photoExample}
           </summary>
-          <img src={templateSrc} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+          <img src={templateSrc} alt={t.photoExample} className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
         </details>
       )}
       {approvedItems && approvedItems.length > 0 && (
@@ -1229,9 +1229,9 @@ function PhotoSlot({
                 {subTemplate && (
                   <details className="mb-1.5">
                     <summary className="text-xs text-muted-foreground cursor-pointer hover:text-primary select-none">
-                      📷 Приклад фото
+                      📷 {t.photoExample}
                     </summary>
-                    <img src={subTemplate} alt="Приклад" className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
+                    <img src={subTemplate} alt={t.photoExample} className="mt-1.5 w-full rounded-lg object-cover aspect-video" />
                   </details>
                 )}
                 {hasFile && (
@@ -1255,10 +1255,10 @@ function PhotoSlot({
                   }} />
                 <div className="flex gap-1.5">
                   <label htmlFor={`${subId}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
-                    <Camera className="size-3.5" /> Камера
+                    <Camera className="size-3.5" /> {t.camera}
                   </label>
                   <label htmlFor={`${subId}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-xs">
-                    <Upload className="size-3.5" /> Галерея
+                    <Upload className="size-3.5" /> {t.gallery}
                   </label>
                 </div>
               </div>
@@ -1287,10 +1287,10 @@ function PhotoSlot({
       />
       <div className="flex gap-2">
         <label htmlFor={`${id}-camera`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
-          <Camera className="size-4" /> Камера
+          <Camera className="size-4" /> {t.camera}
         </label>
         <label htmlFor={`${id}-gallery`} className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm">
-          <Upload className="size-4" /> Галерея
+          <Upload className="size-4" /> {t.gallery}
         </label>
       </div>
       {files.length > 0 && (
